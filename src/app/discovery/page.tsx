@@ -1,0 +1,293 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target } from "lucide-react";
+
+export default function Discovery() {
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedJob, setSelectedJob] = useState<any | null>(null);
+  
+  const [activeTab, setActiveTab] = useState("ALL"); 
+  const [sortOrder, setSortOrder] = useState("NEWEST"); 
+  const [selectedPlatform, setSelectedPlatform] = useState("ALL"); 
+
+  const fetchJobs = () => {
+    fetch("/api/live-jobs")
+      .then((res) => res.json())
+      .then((data) => {
+        setJobs(data);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchJobs(); 
+    const interval = setInterval(fetchJobs, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const saveJob = async (job: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent opening the modal when clicking save
+    await fetch("/api/saved-jobs", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: job.id, status: "QUEUED" }),
+    });
+    setJobs(prev => prev.filter(j => j.id !== job.id));
+    setSelectedJob(null); // Close modal if open
+  };
+
+  const parseBudget = (budgetStr: string | null) => {
+    if (!budgetStr) return 0;
+    if (budgetStr.toLowerCase().includes("high target") || budgetStr.toLowerCase().includes("high priority")) return 999999;
+    const digits = budgetStr.replace(/[^0-9]/g, '');
+    return digits ? parseInt(digits) : 0;
+  };
+
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<{ requirements: string; suggestedPrice: string } | null>(null);
+
+  const handleOpenModal = async (job: any) => {
+    setSelectedJob(job);
+    setAiAnalysis(null);
+    setIsAnalyzing(true);
+    
+    try {
+      const res = await fetch("/api/analyze-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(job),
+      });
+      const data = await res.json();
+      setAiAnalysis(data);
+    } catch (error) {
+      console.error("AI failed", error);
+    }
+    setIsAnalyzing(false);
+  };
+
+  let filteredJobs = jobs.filter((job) => {
+    if (activeTab !== "ALL" && job.leadType !== activeTab) return false;
+    if (selectedPlatform !== "ALL" && job.platform !== selectedPlatform) return false;
+    return true;
+  });
+
+  filteredJobs = filteredJobs.sort((a, b) => {
+    if (sortOrder === "BUDGET_DESC") return parseBudget(b.budget || b.issueDetected) - parseBudget(a.budget || a.issueDetected);
+    if (sortOrder === "BUDGET_ASC") return parseBudget(a.budget || a.issueDetected) - parseBudget(b.budget || b.issueDetected);
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  const uniquePlatforms = Array.from(new Set(jobs.map(j => j.platform)));
+
+  return (
+    <div className="max-w-6xl mx-auto pb-10 relative">
+      <div className="flex justify-between items-end mb-8">
+        <div>
+          <h1 className="text-3xl font-extrabold text-white mb-2 flex items-center gap-3">
+            <Globe2 className="text-blue-500" size={28} />
+            Global Discovery
+          </h1>
+          <p className="text-gray-400 text-sm">Live structured feed. Refreshed every 60 seconds.</p>
+        </div>
+        <div className="flex gap-4">
+          <div className="premium-panel flex items-center px-4 py-2 gap-2 focus-within:border-white/20 transition-all">
+            <Search size={16} className="text-gray-400" />
+            <input 
+              type="text" 
+              placeholder="Search roles..." 
+              className="bg-transparent border-none outline-none text-sm text-gray-200 placeholder-gray-500 w-48"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* FILTER CONTROLS BAR */}
+      <div className="premium-panel p-2 mb-8 flex items-center justify-between">
+        <div className="flex gap-2">
+          {["ALL", "GLOBAL", "LOCAL"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === tab 
+                ? "bg-white/10 text-white border border-white/10" 
+                : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.02] border border-transparent"
+              }`}
+            >
+              {tab === "ALL" ? "All Leads" : tab === "GLOBAL" ? "Freelance Projects" : "Local Businesses"}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-4 px-3">
+          <div className="flex items-center gap-2">
+            <Filter size={14} className="text-gray-500" />
+            <select 
+              className="bg-transparent text-sm text-gray-300 font-medium outline-none cursor-pointer hover:text-white transition"
+              value={selectedPlatform}
+              onChange={(e) => setSelectedPlatform(e.target.value)}
+            >
+              <option value="ALL" className="bg-[#121212]">All Platforms</option>
+              {uniquePlatforms.map(p => (
+                <option key={p as string} value={p as string} className="bg-[#121212]">{p as string}</option>
+              ))}
+            </select>
+          </div>
+          <div className="w-px h-5 bg-white/10 mx-2"></div>
+          <div className="flex items-center gap-2">
+            <ArrowUpDown size={14} className="text-gray-500" />
+            <select 
+              className="bg-transparent text-sm text-gray-300 font-medium outline-none cursor-pointer hover:text-white transition"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
+              <option value="NEWEST" className="bg-[#121212]">Sort: Newest First</option>
+              <option value="BUDGET_DESC" className="bg-[#121212]">Sort: Budget (High to Low)</option>
+              <option value="BUDGET_ASC" className="bg-[#121212]">Sort: Budget (Low to High)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* FEED CONTENT */}
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+           <Loader2 className="animate-spin text-gray-500" size={32} />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredJobs.length === 0 && (
+            <div className="premium-panel h-48 flex items-center justify-center text-gray-500 text-sm border-dashed">
+              No leads match your exact filters. Try changing them!
+            </div>
+          )}
+
+          {filteredJobs.map((job: any) => (
+            <div 
+              key={job.id} 
+              onClick={() => handleOpenModal(job)}
+              className={`premium-panel flex justify-between items-center p-6 group cursor-pointer hover:ring-1 hover:ring-white/20`}
+            >
+              <div>
+                <div className="flex items-center gap-3 mb-2.5">
+                  <span className={`premium-badge ${job.leadType === 'LOCAL' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
+                    {job.platform}
+                  </span>
+                  <p className="text-xs text-gray-500 flex items-center gap-1.5 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                    {job.district || "Live Match"}
+                  </p>
+                </div>
+                <h4 className="text-lg font-bold text-gray-200 group-hover:text-white transition-colors tracking-tight">{job.title}</h4>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-1 w-[80%]">
+                  {job.leadType === 'LOCAL' ? `System detected website issue: ${job.issueDetected}. High priority outreach target.` : `Client is actively looking for a developer to handle this project. Click view to see full brief.`}
+                </p>
+              </div>
+              
+              <div className="flex flex-col items-end gap-4">
+                <p className="font-semibold text-gray-100 text-lg">
+                  {job.leadType === 'LOCAL' ? <span className="text-orange-400/90 text-sm">High Target</span> : job.budget}
+                </p>
+                <div className="flex gap-2">
+                  <button onClick={(e) => saveJob(job, e)} className="premium-button-primary text-xs flex items-center gap-2">
+                    <Save size={14} /> Pipeline
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* DETAILED JOB OVERLAY MODAL */}
+      {selectedJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setSelectedJob(null)}>
+          <div 
+            className="premium-panel w-full max-w-3xl p-8 relative flex flex-col gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10" 
+            onClick={(e) => e.stopPropagation()} // Prevent clicking inside modal from closing it
+          >
+            <button 
+              onClick={() => setSelectedJob(null)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Modal Header */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <span className={`premium-badge ${selectedJob.leadType === 'LOCAL' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
+                  {selectedJob.platform}
+                </span>
+                <span className="text-sm text-gray-400 font-medium">
+                  {selectedJob.leadType === 'LOCAL' ? `Located in ${selectedJob.district}` : 'Global Remote Lead'}
+                </span>
+              </div>
+              <h2 className="text-3xl font-extrabold text-white leading-tight pr-10">{selectedJob.title}</h2>
+            </div>
+
+            {/* AI Intelligence Section */}
+            <div className="bg-[#121212] rounded-xl border border-white/[0.04] overflow-hidden mt-2 min-h-[160px]">
+              <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 px-5 py-3 border-b border-white/[0.04] flex items-center gap-2">
+                <Zap className="text-yellow-400" size={18} fill="currentColor" />
+                <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">True AI Intelligence Report</h3>
+              </div>
+              <div className="p-5 flex flex-col gap-5">
+                {isAnalyzing || !aiAnalysis ? (
+                  <div className="flex flex-col items-center justify-center py-6 gap-3">
+                     <Loader2 className="animate-spin text-purple-400" size={28} />
+                     <p className="text-sm text-gray-400 font-medium animate-pulse">Gemini AI is analyzing client details...</p>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-300 flex items-center gap-2 mb-2">
+                        <Target size={16} className="text-blue-400" /> What to Build (Project Scope)
+                      </h4>
+                      <p className="text-sm text-gray-400 leading-relaxed">
+                        {aiAnalysis.requirements}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-300 flex items-center gap-2 mb-2">
+                        💰 Suggested Pitch Price
+                      </h4>
+                      <p className="text-sm text-emerald-400 font-semibold bg-emerald-500/10 inline-block px-3 py-1.5 rounded-lg border border-emerald-500/20">
+                        {aiAnalysis.suggestedPrice}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer Actions */}
+            <div className="flex gap-4 mt-2 pt-6 border-t border-white/[0.04] justify-between items-center">
+              <a 
+                href={
+                  selectedJob.leadType === 'LOCAL' 
+                    ? (selectedJob.issueDetected === 'NO_WEBSITE' 
+                        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.title + " " + (selectedJob.district || ""))}` 
+                        : selectedJob.url)
+                    : selectedJob.url
+                } 
+                target="_blank" 
+                className="premium-button text-sm flex-1 text-center"
+              >
+                {selectedJob.leadType === 'LOCAL' 
+                  ? (selectedJob.issueDetected === 'NO_WEBSITE' ? 'Open in Google Maps' : 'Audit Broken Website') 
+                  : 'View Original Post'}
+              </a>
+              <button onClick={(e) => saveJob(selectedJob, e)} className="premium-button-primary text-sm flex-1 flex items-center justify-center gap-2">
+                <Save size={16} /> Save to CRM Pipeline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
