@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Lead {
+  id              String   @id @default(cuid())
+  
+  // Universal Fields
+  title           String   // Job title OR Business Name
+  platform        String   // UPWORK, FREELANCER, TWITTER, GOOGLE_MAPS, etc.
+  leadType        String   @default("GLOBAL") // GLOBAL (Jobs) or LOCAL (Google Maps)
+  url             String   // Link to job post OR Google Maps URL
+  status          String   @default("SAVED") // SAVED, PITCHED, WON
+  
+  // Global Freelance/Social Specific
+  budget          String?  // e.g., "$500 - $1000"
+  postedAt        DateTime?
+  
+  // Local Business Specific (Google Maps)
+  district        String?  // e.g., "Coimbatore"
+  niche           String?  // e.g., "Restaurant"
+  contactInfo     String?  // Phone number or email
+  rating          Float?   // e.g., 4.5
+  websiteUrl      String?  // The business's actual website (if they have one)
+  issueDetected   String?  // e.g., "NO_WEBSITE", "SLOW_LOAD", "NOT_MOBILE_FRIENDLY"
+
+  createdAt       DateTime @default(now())
+}
