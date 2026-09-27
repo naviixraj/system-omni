@@ -24,7 +24,7 @@ export default function Discovery() {
 
   useEffect(() => {
     fetchJobs(); 
-    const interval = setInterval(fetchJobs, 60000);
+    const interval = setInterval(fetchJobs, 15000); // Live real-time polling every 15s
     return () => clearInterval(interval);
   }, []);
 
