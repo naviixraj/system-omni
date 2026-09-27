@@ -1,19 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ExternalLink, Loader2, Copy, Check } from "lucide-react";
+import { Sparkles, ExternalLink, Loader2, Copy, Check, Trash2 } from "lucide-react";
 
 export default function Pipeline() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
   const [pitches, setPitches] = useState<{ [key: string]: string }>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/saved-jobs")
       .then((res) => res.json())
       .then((data) => setJobs(data));
   }, []);
+
+  const handleUnsave = async (jobId: string) => {
+    setDeletingId(jobId);
+    try {
+      await fetch(`/api/saved-jobs?id=${jobId}`, { method: "DELETE" });
+      setJobs((prev) => prev.filter((job) => job.id !== jobId));
+    } catch (error) {
+      console.error("Failed to unsave job", error);
+    }
+    setDeletingId(null);
+  };
 
   const handleGeneratePitch = async (job: any) => {
     setGeneratingFor(job.id);
@@ -92,22 +104,32 @@ export default function Pipeline() {
                 <span className="premium-badge bg-blue-500/10 text-blue-400 border-blue-500/20">
                   {job.platform}
                 </span>
-                {(job.url || job.leadType === 'LOCAL') && (
-                  <a 
-                    href={
-                      job.leadType === 'LOCAL' 
-                        ? (job.issueDetected === 'NO_WEBSITE' 
-                            ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.title + " " + (job.district || ""))}` 
-                            : job.url)
-                        : job.url
-                    } 
-                    target="_blank" 
-                    className="text-gray-500 hover:text-gray-300 transition"
-                    title={job.leadType === 'LOCAL' ? (job.issueDetected === 'NO_WEBSITE' ? 'Check Map' : 'Audit Website') : 'View Post'}
+                <div className="flex items-center gap-2">
+                  {(job.url || job.leadType === 'LOCAL') && (
+                    <a 
+                      href={
+                        job.leadType === 'LOCAL' 
+                          ? (job.issueDetected === 'NO_WEBSITE' 
+                              ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.title + " " + (job.district || ""))}` 
+                              : job.url)
+                          : job.url
+                      } 
+                      target="_blank" 
+                      className="text-gray-500 hover:text-gray-300 transition"
+                      title={job.leadType === 'LOCAL' ? (job.issueDetected === 'NO_WEBSITE' ? 'Check Map' : 'Audit Website') : 'View Post'}
+                    >
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => handleUnsave(job.id)}
+                    disabled={deletingId === job.id}
+                    className="text-gray-500 hover:text-red-400 transition"
+                    title="Unsave / Remove"
                   >
-                    <ExternalLink size={14} />
-                  </a>
-                )}
+                    {deletingId === job.id ? <Loader2 size={14} className="animate-spin text-red-400" /> : <Trash2 size={14} />}
+                  </button>
+                </div>
               </div>
               <h4 className="font-bold text-sm text-gray-200 mb-1 leading-tight">{job.title}</h4>
               
