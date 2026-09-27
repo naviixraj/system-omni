@@ -23,12 +23,12 @@ export async function POST(req: Request) {
       - Niche: ${job.niche || 'Web Development'}
       - Detected Issue: ${job.issueDetected || 'None'}
 
-      Your goal is to tell the freelancer exactly what to build to win this client, and exactly what to charge.
+      Your goal is to tell the freelancer exactly what to build to win this client, and exactly what to charge based on the specific work.
       
       Respond in STRICT JSON format with exactly these two keys:
       {
         "requirements": "Write a simple but properly explained technical breakdown of the project. Use 2-3 bullet points explaining exactly what features to build.",
-        "suggestedPrice": "Calculate a highly specific price in INR (₹) that falls strictly within their budget range. If their budget is USD ($), multiply it by 84 to convert to INR. VERY IMPORTANT: Do NOT pick a perfectly round number (like ₹40,000). Pick a highly specific, organic number (like ₹39,450 or ₹41,200) to make the bid look carefully calculated by a human based on exact difficulty. Give a 1-sentence justification for the price."
+        "suggestedPrice": "Calculate a specific total price in INR (₹) strictly within their budget (Convert USD to INR by multiplying by 84). Very importantly, break this total bid down into 2-3 line items based on the SPECIFIC PROJECT WORK (e.g., 'Total Bid: ₹31,450. Breakdown: UI Design (₹10,000), React Frontend (₹15,000), Database Setup (₹6,450)'). This shows the client exactly how the bid rate changes according to the work required."
       }
     `;
 
@@ -37,12 +37,12 @@ export async function POST(req: Request) {
       messages: [{ role: 'user', content: prompt }],
       model: 'llama-3.1-70b-versatile',
       response_format: { type: 'json_object' },
-      temperature: 0.7, // Added higher temperature to ensure varied, organic responses
+      temperature: 0.7, 
     });
 
     const text = chatCompletion.choices[0]?.message?.content || "{}";
     
-    // Safely parse JSON in case Groq includes markdown ticks
+    // Safely parse JSON
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const aiData = JSON.parse(cleanJson);
 
@@ -77,13 +77,13 @@ export async function POST(req: Request) {
     if (job.leadType === "LOCAL") {
       if (job.issueDetected === "NO_WEBSITE") {
         requirements = `• Build a modern 3-page landing site for a ${job.niche} business.\n• Implement a mobile-first design with a sticky "Call Now" button.\n• Integrate Google Maps & SEO tags to capture local traffic in ${job.district}.`;
-        suggestedPrice = "₹24,500 (Base Setup) + ₹2,000/mo Maintenance. Reason: Standard 3-page sites are low complexity but offer immense local SEO value.";
+        suggestedPrice = "Total Bid: ₹28,500. Breakdown: UI/UX Design (₹8,500), Frontend Development (₹15,000), Google Maps SEO (₹5,000).";
       } else if (job.issueDetected === "NOT_MOBILE_FRIENDLY") {
         requirements = `• Perform a complete UI/UX responsive overhaul.\n• Rebuild the frontend using Tailwind CSS so it perfectly fits mobile screens.\n• Optimize image sizes to improve loading speeds for mobile users.`;
-        suggestedPrice = "₹14,850 (Responsive Redesign). Reason: You are just modifying existing assets using Tailwind classes, which is low-to-medium difficulty.";
+        suggestedPrice = "Total Bid: ₹16,450. Breakdown: Mobile UI Audit (₹4,000), Tailwind CSS Overhaul (₹12,450).";
       } else {
         requirements = `• Conduct a technical performance audit.\n• Fix the "${job.issueDetected}" issue affecting their current site.\n• Migrate hosting or optimize their heavy theme for lightning-fast speeds.`;
-        suggestedPrice = "₹28,200 (Technical Optimization). Reason: Server migrations and deep performance debugging require high-level technical expertise.";
+        suggestedPrice = "Total Bid: ₹22,100. Breakdown: Technical Audit (₹5,000), Server/Theme Optimization (₹17,100).";
       }
     } else {
       requirements = `• Develop a scalable MVP utilizing React/Next.js based on their request for "${job.title}".\n• Ensure clean component architecture and fast delivery.\n• Provide a 2-3 week roadmap to the client.`;
@@ -95,33 +95,40 @@ export async function POST(req: Request) {
         
         const titleLower = job.title.toLowerCase();
         let baseBid = 0;
-        let reason = "";
+        let breakdown = "";
 
         if (titleLower.includes("simple") || titleLower.includes("fix") || titleLower.includes("basic") || titleLower.includes("html") || titleLower.includes("wordpress")) {
            baseBid = minINR + ((maxINR - minINR) * 0.2); 
-           reason = "Because this is a low-complexity task, bidding near their minimum budget guarantees you win the contract over greedy freelancers.";
+           // Low complexity breakdown
+           const p1 = Math.round((baseBid * 0.4) / 50) * 50;
+           const p2 = Math.round((baseBid * 0.6) / 50) * 50;
+           breakdown = `UI Fixes (₹${p1.toLocaleString('en-IN')}), Implementation (₹${p2.toLocaleString('en-IN')})`;
         } else if (titleLower.includes("react") || titleLower.includes("app") || titleLower.includes("backend") || titleLower.includes("complex") || titleLower.includes("ecommerce")) {
            baseBid = maxINR * 0.9; 
-           reason = "Because this requires complex full-stack architecture, we are pricing it near their maximum limit (but under to maintain a competitive edge).";
+           // High complexity breakdown
+           const p1 = Math.round((baseBid * 0.3) / 50) * 50;
+           const p2 = Math.round((baseBid * 0.5) / 50) * 50;
+           const p3 = Math.round((baseBid * 0.2) / 50) * 50;
+           breakdown = `Frontend React (₹${p1.toLocaleString('en-IN')}), Backend Architecture (₹${p2.toLocaleString('en-IN')}), Deployment (₹${p3.toLocaleString('en-IN')})`;
         } else {
            baseBid = (minINR + maxINR) / 2; 
-           reason = "Because the technical difficulty is moderate, bidding the median of their budget signals a fair and honest estimation.";
+           // Medium complexity breakdown
+           const p1 = Math.round((baseBid * 0.4) / 50) * 50;
+           const p2 = Math.round((baseBid * 0.6) / 50) * 50;
+           breakdown = `Component Design (₹${p1.toLocaleString('en-IN')}), Logic & Integration (₹${p2.toLocaleString('en-IN')})`;
         }
         
-        // ADD ORGANIC RANDOM VARIANCE (± 4%) so bids never look robotic or repeated
         const variance = (Math.random() * 0.08) - 0.04; 
         let finalBid = baseBid * (1 + variance);
-        
-        // Round to nearest 50 rupees to make it look like a real human calculation (e.g., 31450 instead of 31457)
         finalBid = Math.round(finalBid / 50) * 50;
         
         if (job.budget?.includes("/hr") || job.budget?.includes("/mo")) {
-          suggestedPrice = `Pitch their exact rate of ${job.budget}, but offer the first 5 hours risk-free to build absolute trust.`;
+          suggestedPrice = `Total: ${job.budget}. Breakdown: Hourly rate changes based on tasks (e.g. Frontend work billed standard, Backend work billed at +15% premium).`;
         } else {
-          suggestedPrice = `Bid exactly ₹${finalBid.toLocaleString('en-IN')}. ${reason}`;
+          suggestedPrice = `Total Bid: ₹${finalBid.toLocaleString('en-IN')}. Breakdown: ${breakdown}.`;
         }
       } else {
-        suggestedPrice = "Offer a Free Discovery Call to audit their complexity, then pitch ₹29,500+ for the MVP.";
+        suggestedPrice = "Total Bid: ₹30,000+. Breakdown: Discovery Phase (₹5,000), Core Development (₹25,000+ depending on exact features).";
       }
     }
 
