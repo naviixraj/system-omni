@@ -255,7 +255,14 @@ export default function Discovery() {
                   {selectedJob.leadType === 'LOCAL' ? `Located in ${selectedJob.district}` : 'Global Remote Lead'}
                 </span>
               </div>
-              <h2 className="text-3xl font-extrabold text-white leading-tight pr-10">{selectedJob.title}</h2>
+              <div className="flex items-center gap-3 pr-10">
+                <h2 className="text-3xl font-extrabold text-white leading-tight">{selectedJob.title}</h2>
+                {selectedJob.url && selectedJob.url !== '' && selectedJob.issueDetected !== 'NO_WEBSITE' && (
+                  <a href={selectedJob.url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400 transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10" title="Visit Official Website">
+                    <Globe2 size={20} />
+                  </a>
+                )}
+              </div>
             </div>
 
             {/* AI Intelligence Section */}

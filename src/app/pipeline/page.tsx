@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ExternalLink, Loader2, Copy, Check, RotateCcw } from "lucide-react";
+import { Sparkles, ExternalLink, Loader2, Copy, Check, RotateCcw, Globe2 } from "lucide-react";
 
 export default function Pipeline() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -145,7 +145,14 @@ export default function Pipeline() {
                   </button>
                 </div>
               </div>
-              <h4 className="font-bold text-sm text-gray-200 mb-1 leading-tight">{job.title}</h4>
+              <div className="flex items-center gap-2 mb-1">
+                <h4 className="font-bold text-sm text-gray-200 leading-tight">{job.title}</h4>
+                {job.url && job.url !== '' && job.issueDetected !== 'NO_WEBSITE' && (
+                  <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-400 transition" title="Visit Official Website">
+                    <Globe2 size={14} />
+                  </a>
+                )}
+              </div>
               
               <p className="text-gray-400 font-medium text-[11px] mb-4">
                 {job.leadType === 'LOCAL' ? 'High Priority Local Lead' : job.budget}
