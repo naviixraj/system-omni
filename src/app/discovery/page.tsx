@@ -256,7 +256,7 @@ export default function Discovery() {
       {selectedJob && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setSelectedJob(null)}>
           <div 
-            className="premium-panel w-full max-w-3xl p-8 relative flex flex-col gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10" 
+            className="premium-panel w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar p-8 relative flex flex-col gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10" 
             onClick={(e) => e.stopPropagation()} // Prevent clicking inside modal from closing it
           >
             <button 
@@ -292,7 +292,7 @@ export default function Discovery() {
                 <Zap className="text-yellow-400" size={18} fill="currentColor" />
                 <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">True AI Intelligence Report</h3>
               </div>
-              <div className="p-5 flex flex-col gap-5 overflow-y-auto max-h-[250px] custom-scrollbar">
+              <div className="p-5 flex flex-col gap-5 ">
                 {isAnalyzing || !aiAnalysis ? (
                   <div className="flex flex-col items-center justify-center py-6 gap-3">
                      <Loader2 className="animate-spin text-purple-400" size={28} />
