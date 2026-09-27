@@ -84,11 +84,17 @@ async function runOSMQuery(city: string, amenity: string) {
 }
 
 async function scrapeOpenStreetMapFallback() {
-  // Heavy focus on Tamil Nadu local areas
+  // Exhaustive list of all Tamil Nadu districts and major commercial towns
   const tnCities = [
-    "Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", 
-    "Tirunelveli", "Erode", "Vellore", "Thoothukudi", "Dindigul", 
-    "Thanjavur", "Kanyakumari", "Karur", "Ooty"
+    "Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Trichy", "Salem", 
+    "Tirunelveli", "Erode", "Vellore", "Thoothukudi", "Tuticorin", "Dindigul", 
+    "Thanjavur", "Kanyakumari", "Nagercoil", "Karur", "Ooty", "Kanchipuram",
+    "Chengalpattu", "Tiruvallur", "Tiruvannamalai", "Cuddalore", "Villupuram",
+    "Kumbakonam", "Namakkal", "Tiruppur", "Hosur", "Rajapalayam", "Sivakasi",
+    "Pudukkottai", "Dharmapuri", "Krishnagiri", "Ramanathapuram", "Theni",
+    "Virudhunagar", "Sivaganga", "Kallakurichi", "Tenkasi", "Ranipet",
+    "Tirupathur", "Mayiladuthurai", "Nagapattinam", "Tiruvarur", "Ariyalur",
+    "Perambalur", "Nilgiris", "Ambur", "Pollachi", "Mettupalayam"
   ];
   // Secondary other state targets
   const otherCities = ["Bangalore", "Kochi", "Hyderabad", "Mumbai"];
