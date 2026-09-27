@@ -32,100 +32,11 @@ async function auditWebsite(url: string): Promise<string | null> {
 }
 
 // ==========================================
-// FREE OPEN-SOURCE SCRAPER (NO API KEY NEEDED)
-// ==========================================
-async function scrapeOpenStreetMapFallback() {
-  const cities = ["Chennai", "Coimbatore", "Mumbai", "Bangalore", "Madurai"];
-  const amenities = ["restaurant", "hospital", "dentist", "cafe", "pharmacy"];
-  
-  const city = cities[Math.floor(Math.random() * cities.length)];
-  const amenity = amenities[Math.floor(Math.random() * amenities.length)];
-  
-  console.log(`[CRON] Scraping REAL ${amenity}s in ${city} via OpenStreetMap (100% Free Engine)...`);
-  
-  // Overpass API Query Language (Finds real businesses in a specific city)
-  const overpassQuery = `
-    [out:json][timeout:25];
-    area["name"="${city}"]->.searchArea;
-    node["amenity"="${amenity}"](area.searchArea);
-    out 50;
-  `;
-  
-  try {
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'FreelanceCRM/1.0'
-      },
-      body: `data=${encodeURIComponent(overpassQuery)}`
-    });
-    
-    if (!response.ok) {
-      console.log("[CRON] OSM API Rate limited, skipping cycle...");
-      return;
-    }
-    
-    const data = await response.json();
-    if (!data.elements || data.elements.length === 0) return;
-
-    // Process ALL businesses found by the API instead of just 3
-    for (const element of data.elements) {
-      if (!element.tags || !element.tags.name) continue;
-      
-      const businessName = element.tags.name;
-      let websiteUrl = element.tags.website || element.tags['contact:website'] || null;
-      
-      // Deduplication check
-      const exists = await prisma.lead.findFirst({ where: { title: businessName } });
-      if (exists) {
-        console.log(`[CRON] Skipping ${businessName} (Already in Database)`);
-        continue;
-      }
-
-      let issueDetected = null;
-
-      if (!websiteUrl) {
-        issueDetected = 'NO_WEBSITE';
-      } else {
-        // Fix URLs missing http://
-        if (!websiteUrl.startsWith('http')) {
-          websiteUrl = 'https://' + websiteUrl;
-        }
-        console.log(`[CRON] Auditing real official website: ${websiteUrl}`);
-        issueDetected = await auditWebsite(websiteUrl);
-      }
-
-      // If we found a real issue, save it!
-      if (issueDetected) {
-        await prisma.lead.create({
-          data: {
-            title: businessName,
-            platform: 'OPEN_STREET_MAP',
-            district: city,
-            niche: amenity,
-            url: websiteUrl || '',
-            issueDetected: issueDetected,
-            leadType: 'LOCAL',
-            status: 'SAVED' 
-          }
-        });
-        console.log(`[CRON] ✅ Saved Real Lead: ${businessName} [Issue: ${issueDetected}]`);
-      } else {
-        console.log(`[CRON] ❌ Ignored ${businessName} (Website is completely healthy)`);
-      }
-    }
-  } catch (err) {
-    console.error("[CRON] Error during OpenStreetMap scrape:", err);
-  }
-}
-
-// ==========================================
 // STRICT WEBSITE-ONLY OPEN-SOURCE SCRAPER
 // ==========================================
 async function scrapeOpenStreetMapFallback() {
   const cities = ["Chennai", "Coimbatore", "Mumbai", "Bangalore", "Madurai"];
-  const amenities = ["restaurant", "hospital", "dentist", "cafe", "pharmacy"];
+  const amenities = ["restaurant", "hospital", "dentist", "cafe", "pharmacy", "clinic"];
   
   const city = cities[Math.floor(Math.random() * cities.length)];
   const amenity = amenities[Math.floor(Math.random() * amenities.length)];
@@ -136,12 +47,12 @@ async function scrapeOpenStreetMapFallback() {
   const overpassQuery = `
     [out:json][timeout:25];
     area["name"="${city}"]->.searchArea;
-    node["amenity"="${amenity}"](area.searchArea)["website"];
-    out 20;
+    node["amenity"="${amenity}"](area.searchArea);
+    out 50;
   `;
   
   try {
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
+    const response = await fetch('https://lz4.overpass-api.de/api/interpreter', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -156,37 +67,44 @@ async function scrapeOpenStreetMapFallback() {
     }
     
     const data = await response.json();
-    if (!data.elements || data.elements.length === 0) return;
+    if (!data.elements || data.elements.length === 0) {
+      console.log(`[CRON] No results found for ${amenity}s in ${city}.`);
+      return;
+    }
 
     for (const element of data.elements) {
       if (!element.tags || !element.tags.name) continue;
       
       const businessName = element.tags.name;
-      let websiteUrl = element.tags.website;
+      let websiteUrl = element.tags.website || element.tags['contact:website'] || null;
       
       const exists = await prisma.lead.findFirst({ where: { title: businessName } });
       if (exists) continue;
 
-      if (websiteUrl) {
-        if (!websiteUrl.startsWith('http')) websiteUrl = 'https://' + websiteUrl;
-        console.log(`[CRON] Auditing Strict Real URL: ${websiteUrl}`);
-        const issueDetected = await auditWebsite(websiteUrl);
+      let issueDetected = null;
 
-        if (issueDetected) {
-          await prisma.lead.create({
-            data: {
-              title: businessName,
-              platform: 'OPEN_STREET_MAP',
-              district: city,
-              niche: amenity,
-              url: websiteUrl,
-              issueDetected: issueDetected,
-              leadType: 'LOCAL',
-              status: 'SAVED' 
-            }
-          });
-          console.log(`[CRON] ✅ Saved Lead: ${businessName} [Issue: ${issueDetected}]`);
-        }
+      if (!websiteUrl) {
+        issueDetected = 'NO_WEBSITE';
+      } else {
+        if (!websiteUrl.startsWith('http')) websiteUrl = 'http://' + websiteUrl;
+        console.log(`[CRON] Auditing Strict Real URL: ${websiteUrl}`);
+        issueDetected = await auditWebsite(websiteUrl);
+      }
+
+      if (issueDetected) {
+        await prisma.lead.create({
+          data: {
+            title: businessName,
+            platform: 'OPEN_STREET_MAP',
+            district: city,
+            niche: amenity,
+            url: websiteUrl || '',
+            issueDetected: issueDetected,
+            leadType: 'LOCAL',
+            status: 'SAVED' 
+          }
+        });
+        console.log(`[CRON] ✅ Saved Lead: ${businessName} [Issue: ${issueDetected}]`);
       }
     }
   } catch (err) {
@@ -225,6 +143,8 @@ export async function scrapeGoogleMapsDrip() {
        return;
     }
 
+    if (!data.results || data.results.length === 0) return;
+
     const topResults = data.results.slice(0, 3);
 
     for (const place of topResults) {
@@ -232,10 +152,7 @@ export async function scrapeGoogleMapsDrip() {
       const district = place.formatted_address?.split(',').slice(-2, -1)[0]?.trim() || randomCity;
       
       const exists = await prisma.lead.findFirst({ where: { title: businessName } });
-      if (exists) {
-        console.log(`[CRON] Skipping ${businessName} (Already audited)`);
-        continue;
-      }
+      if (exists) continue;
 
       const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=website&key=${apiKey}`;
       const detailsRes = await fetch(detailsUrl);
@@ -248,7 +165,6 @@ export async function scrapeGoogleMapsDrip() {
       if (!websiteUrl) {
         issueDetected = 'NO_WEBSITE';
       } else {
-        console.log(`[CRON] Auditing Google Verified URL: ${websiteUrl}`);
         issueDetected = await auditWebsite(websiteUrl);
       }
 
@@ -265,9 +181,6 @@ export async function scrapeGoogleMapsDrip() {
             status: 'SAVED'
           }
         });
-        console.log(`[CRON] ✅ Saved Google Lead: ${businessName} [Issue: ${issueDetected}]`);
-      } else {
-        console.log(`[CRON] ❌ Ignored ${businessName} (Google Verified Website is healthy)`);
       }
     }
   } catch (error) {
