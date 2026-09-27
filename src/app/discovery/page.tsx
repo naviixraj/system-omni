@@ -11,6 +11,7 @@ export default function Discovery() {
   const [activeTab, setActiveTab] = useState("ALL"); 
   const [sortOrder, setSortOrder] = useState("NEWEST"); 
   const [selectedPlatform, setSelectedPlatform] = useState("ALL"); 
+  const [issueFilter, setIssueFilter] = useState("ALL"); 
 
   const fetchJobs = () => {
     fetch("/api/live-jobs")
@@ -70,6 +71,7 @@ export default function Discovery() {
   let filteredJobs = jobs.filter((job) => {
     if (activeTab !== "ALL" && job.leadType !== activeTab) return false;
     if (selectedPlatform !== "ALL" && job.platform !== selectedPlatform) return false;
+    if (issueFilter !== "ALL" && job.issueDetected !== issueFilter) return false;
     return true;
   });
 
@@ -136,6 +138,23 @@ export default function Discovery() {
             </select>
           </div>
           <div className="w-px h-5 bg-white/10 mx-2"></div>
+          
+          <div className="flex items-center gap-2">
+            <Filter size={14} className="text-gray-500" />
+            <select 
+              className="bg-transparent text-sm text-gray-300 font-medium outline-none cursor-pointer hover:text-white transition"
+              value={issueFilter}
+              onChange={(e) => setIssueFilter(e.target.value)}
+            >
+              <option value="ALL" className="bg-[#121212]">All Issues</option>
+              <option value="NO_WEBSITE" className="bg-[#121212]">No Website</option>
+              <option value="SLOW_LOAD" className="bg-[#121212]">Slow Load</option>
+              <option value="NOT_MOBILE_FRIENDLY" className="bg-[#121212]">Not Mobile Friendly</option>
+              <option value="ERROR" className="bg-[#121212]">Broken/Error</option>
+            </select>
+          </div>
+          <div className="w-px h-5 bg-white/10 mx-2"></div>
+
           <div className="flex items-center gap-2">
             <ArrowUpDown size={14} className="text-gray-500" />
             <select 
@@ -179,6 +198,17 @@ export default function Discovery() {
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
                     {job.district || "Live Match"}
                   </p>
+                  
+                  {job.leadType === 'LOCAL' && job.issueDetected && (
+                    <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm border ${
+                      job.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                      job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                      job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                      'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                    }`}>
+                      {job.issueDetected.replace(/_/g, ' ')}
+                    </span>
+                  )}
                 </div>
                 <h4 className="text-lg font-bold text-gray-200 group-hover:text-white transition-colors tracking-tight">{job.title}</h4>
                 <p className="text-sm text-gray-500 mt-1 line-clamp-1 w-[80%]">
