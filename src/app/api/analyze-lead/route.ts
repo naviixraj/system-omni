@@ -1,18 +1,16 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
-// Initialize the Google Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Initialize the lightning-fast Groq AI Engine
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || '' });
 
 export async function POST(req: Request) {
   const job = await req.json();
 
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("Missing API Key"); // Force fallback if no key
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error("Missing Groq API Key"); 
     }
-
-    const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
 
     const prompt = `
       You are an elite, senior freelance web developer in India analyzing a new lead.
@@ -27,24 +25,27 @@ export async function POST(req: Request) {
 
       Your goal is to tell the freelancer exactly what to build to win this client, and exactly what to charge in INR (₹).
       
-      Respond in STRICT JSON format with no markdown, no \`\`\` blocks, and no extra text. Just this exact structure:
+      Respond in STRICT JSON format with exactly these two keys:
       {
         "requirements": "Write a 2-3 sentence strategic breakdown of exactly what tech stack and features to pitch to this specific client to solve their problem.",
         "suggestedPrice": "Write the exact price range in INR (e.g. '₹25,000 - ₹35,000') and a 1-sentence justification on why."
       }
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Execute Groq Llama 3 70B (Insanely Fast Inference)
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: 'llama-3.1-70b-versatile',
+      response_format: { type: 'json_object' },
+    });
 
-    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const aiData = JSON.parse(cleanJson);
+    const text = chatCompletion.choices[0]?.message?.content || "{}";
+    const aiData = JSON.parse(text);
 
     return NextResponse.json(aiData);
     
   } catch (error: any) {
-    console.warn("AI Analysis Failed or Unavailable, executing Local Intelligence Fallback Engine...");
+    console.warn("AI Analysis Failed or Unavailable, executing Local Intelligence Fallback Engine...", error.message);
 
     // ==========================================
     // FAIL-SAFE LOCAL FALLBACK ENGINE
@@ -84,7 +85,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // Return the fallback as a SUCCESS (200) so the UI works perfectly
     return NextResponse.json({ requirements, suggestedPrice });
   }
 }
