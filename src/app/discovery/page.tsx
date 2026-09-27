@@ -376,7 +376,7 @@ export default function Discovery() {
                     ? selectedJob.issueDetected === 'NO_WEBSITE' ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.title + " " + (selectedJob.district || ""))}`
                     : selectedJob.issueDetected === 'ERROR' ? `https://web.archive.org/web/*/${selectedJob.url}`
                     : selectedJob.issueDetected === 'SLOW_LOAD' ? `https://pagespeed.web.dev/analysis?url=${selectedJob.url}`
-                    : selectedJob.issueDetected === 'NOT_MOBILE_FRIENDLY' ? `https://search.google.com/search-console/mobile-friendly?url=${selectedJob.url}`
+                    : selectedJob.issueDetected === 'NOT_MOBILE_FRIENDLY' ? `https://pagespeed.web.dev/analysis?url=${selectedJob.url}`
                     : selectedJob.url
                     : selectedJob.url
                 } 
