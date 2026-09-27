@@ -254,11 +254,12 @@ export default function Discovery() {
 
       {/* DETAILED JOB OVERLAY MODAL */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setSelectedJob(null)}>
-          <div 
-            className="premium-panel w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar p-8 relative flex flex-col gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10" 
-            onClick={(e) => e.stopPropagation()} // Prevent clicking inside modal from closing it
-          >
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md animate-in fade-in duration-200 custom-scrollbar" onClick={() => setSelectedJob(null)}>
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div 
+              className="premium-panel w-full max-w-3xl p-8 relative flex flex-col gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 my-8" 
+              onClick={(e) => e.stopPropagation()} // Prevent clicking inside modal from closing it
+            >
             <button 
               onClick={() => setSelectedJob(null)}
               className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10"
@@ -395,6 +396,7 @@ export default function Discovery() {
                 <Save size={16} /> Save to CRM Pipeline
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}
