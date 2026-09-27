@@ -120,19 +120,91 @@ async function scrapeOpenStreetMapFallback() {
   }
 }
 
+// ==========================================
+// STRICT WEBSITE-ONLY OPEN-SOURCE SCRAPER
+// ==========================================
+async function scrapeOpenStreetMapFallback() {
+  const cities = ["Chennai", "Coimbatore", "Mumbai", "Bangalore", "Madurai"];
+  const amenities = ["restaurant", "hospital", "dentist", "cafe", "pharmacy"];
+  
+  const city = cities[Math.floor(Math.random() * cities.length)];
+  const amenity = amenities[Math.floor(Math.random() * amenities.length)];
+  
+  console.log(`[CRON] Scraping REAL ${amenity}s in ${city} via OSM (Strict Filter)...`);
+  
+  // Strict Filter: ONLY return businesses that have a registered website
+  const overpassQuery = `
+    [out:json][timeout:25];
+    area["name"="${city}"]->.searchArea;
+    node["amenity"="${amenity}"](area.searchArea)["website"];
+    out 20;
+  `;
+  
+  try {
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'FreelanceCRM/1.0'
+      },
+      body: `data=${encodeURIComponent(overpassQuery)}`
+    });
+    
+    if (!response.ok) {
+      console.log("[CRON] OSM API Rate limited.");
+      return;
+    }
+    
+    const data = await response.json();
+    if (!data.elements || data.elements.length === 0) return;
+
+    for (const element of data.elements) {
+      if (!element.tags || !element.tags.name) continue;
+      
+      const businessName = element.tags.name;
+      let websiteUrl = element.tags.website;
+      
+      const exists = await prisma.lead.findFirst({ where: { title: businessName } });
+      if (exists) continue;
+
+      if (websiteUrl) {
+        if (!websiteUrl.startsWith('http')) websiteUrl = 'https://' + websiteUrl;
+        console.log(`[CRON] Auditing Strict Real URL: ${websiteUrl}`);
+        const issueDetected = await auditWebsite(websiteUrl);
+
+        if (issueDetected) {
+          await prisma.lead.create({
+            data: {
+              title: businessName,
+              platform: 'OPEN_STREET_MAP',
+              district: city,
+              niche: amenity,
+              url: websiteUrl,
+              issueDetected: issueDetected,
+              leadType: 'LOCAL',
+              status: 'SAVED' 
+            }
+          });
+          console.log(`[CRON] ✅ Saved Lead: ${businessName} [Issue: ${issueDetected}]`);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[CRON] Error during OpenStreetMap scrape:", err);
+  }
+}
+
 export async function scrapeGoogleMapsDrip() {
   console.log("[CRON] Initiating REAL-WORLD Local Auditor...");
   
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   
-  // If the user doesn't have a Google API Key, seamlessly fallback to the FREE OpenStreetMap engine!
-  if (!apiKey) {
-    console.log("[CRON] No Google Places API Key found. Using 100% Free OpenStreetMap Engine...");
+  if (!apiKey || apiKey === "your_api_key_here") {
     await scrapeOpenStreetMapFallback();
     return;
   }
 
-  // --- GOOGLE PLACES LOGIC (Remains unchanged for when they get a key) ---
+  // --- GOOGLE PLACES LOGIC ---
   try {
     const niches = ["dental clinic", "restaurant", "lawyer", "chartered accountant", "architect", "fitness center"];
     const cities = ["Chennai", "Coimbatore", "Madurai", "Bangalore", "Hyderabad"];
@@ -142,10 +214,16 @@ export async function scrapeGoogleMapsDrip() {
     const query = `${randomNiche} in ${randomCity}`;
     
     const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}`;
+    console.log(`[CRON] Querying Google Places API for: ${query}`);
     const res = await fetch(searchUrl);
     const data = await res.json();
+    console.log(`[CRON] Google API Response Status:`, data.status);
 
-    if (!data.results || data.results.length === 0) return;
+    if (data.status === 'REQUEST_DENIED') {
+       console.log("[CRON] Google API rejected key. Falling back to OSM...");
+       await scrapeOpenStreetMapFallback();
+       return;
+    }
 
     const topResults = data.results.slice(0, 3);
 
@@ -154,7 +232,10 @@ export async function scrapeGoogleMapsDrip() {
       const district = place.formatted_address?.split(',').slice(-2, -1)[0]?.trim() || randomCity;
       
       const exists = await prisma.lead.findFirst({ where: { title: businessName } });
-      if (exists) continue;
+      if (exists) {
+        console.log(`[CRON] Skipping ${businessName} (Already audited)`);
+        continue;
+      }
 
       const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=website&key=${apiKey}`;
       const detailsRes = await fetch(detailsUrl);
@@ -167,6 +248,7 @@ export async function scrapeGoogleMapsDrip() {
       if (!websiteUrl) {
         issueDetected = 'NO_WEBSITE';
       } else {
+        console.log(`[CRON] Auditing Google Verified URL: ${websiteUrl}`);
         issueDetected = await auditWebsite(websiteUrl);
       }
 
@@ -183,6 +265,9 @@ export async function scrapeGoogleMapsDrip() {
             status: 'SAVED'
           }
         });
+        console.log(`[CRON] ✅ Saved Google Lead: ${businessName} [Issue: ${issueDetected}]`);
+      } else {
+        console.log(`[CRON] ❌ Ignored ${businessName} (Google Verified Website is healthy)`);
       }
     }
   } catch (error) {
