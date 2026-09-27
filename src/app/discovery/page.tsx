@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target } from "lucide-react";
+import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity } from "lucide-react";
 
 export default function Discovery() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -49,9 +49,30 @@ export default function Discovery() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<{ requirements: string; suggestedPrice: string } | null>(null);
 
+  const [isAuditing, setIsAuditing] = useState(false);
+  const [deepAuditReport, setDeepAuditReport] = useState<any[] | null>(null);
+
+  const handleDeepAudit = async (url: string) => {
+    setIsAuditing(true);
+    setDeepAuditReport(null);
+    try {
+      const res = await fetch("/api/deep-audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      setDeepAuditReport(data.report || []);
+    } catch (err) {
+      console.error("Deep audit failed", err);
+    }
+    setIsAuditing(false);
+  };
+
   const handleOpenModal = async (job: any) => {
     setSelectedJob(job);
     setAiAnalysis(null);
+    setDeepAuditReport(null);
     setIsAnalyzing(true);
     
     try {
@@ -299,6 +320,53 @@ export default function Discovery() {
                 )}
               </div>
             </div>
+
+            {/* Deep Technical Audit Section */}
+            {selectedJob.leadType === 'LOCAL' && selectedJob.url && selectedJob.issueDetected !== 'NO_WEBSITE' && (
+              <div className="bg-[#121212] rounded-xl border border-white/[0.04] overflow-hidden mt-2">
+                <div className="bg-gradient-to-r from-red-900/40 to-orange-900/40 px-5 py-3 border-b border-white/[0.04] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Activity className="text-red-400" size={18} />
+                    <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">Deep Technical Audit</h3>
+                  </div>
+                  {!deepAuditReport && !isAuditing && (
+                    <button 
+                      onClick={() => handleDeepAudit(selectedJob.url)}
+                      className="text-xs font-semibold bg-red-500/20 text-red-300 px-3 py-1.5 rounded-lg border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                    >
+                      Run Live Scan
+                    </button>
+                  )}
+                </div>
+                
+                {isAuditing && (
+                  <div className="p-8 flex flex-col items-center justify-center gap-3">
+                    <Loader2 className="animate-spin text-red-400" size={28} />
+                    <p className="text-sm text-gray-400 font-medium animate-pulse">Running robotic penetration scan & performance audit...</p>
+                  </div>
+                )}
+
+                {deepAuditReport && (
+                  <div className="p-5 flex flex-col gap-3">
+                    {deepAuditReport.map((item: any, idx: number) => (
+                      <div key={idx} className="flex gap-3 items-start bg-white/5 p-3 rounded-lg border border-white/5">
+                        <div className="mt-0.5">
+                          {item.status === 'pass' && <CheckCircle2 className="text-emerald-400" size={18} />}
+                          {item.status === 'warn' && <AlertTriangle className="text-yellow-400" size={18} />}
+                          {item.status === 'fail' && <XCircle className="text-red-400" size={18} />}
+                        </div>
+                        <div>
+                          <h4 className={`text-sm font-bold ${item.status === 'pass' ? 'text-emerald-300' : item.status === 'warn' ? 'text-yellow-300' : 'text-red-300'}`}>
+                            {item.title}
+                          </h4>
+                          <p className="text-xs text-gray-400 mt-1">{item.message}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Modal Footer Actions */}
             <div className="flex gap-4 mt-2 pt-6 border-t border-white/[0.04] justify-between items-center">
