@@ -115,12 +115,14 @@ export default function Pipeline() {
                         job.leadType === 'LOCAL' 
                           ? (job.issueDetected === 'NO_WEBSITE' 
                               ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.title + " " + (job.district || ""))}` 
-                              : job.url)
+                              : job.issueDetected === 'BROKEN_WEBSITE'
+                                  ? `https://web.archive.org/web/*/${job.url}`
+                                  : job.url)
                           : job.url
                       } 
                       target="_blank" 
                       className="text-gray-500 hover:text-gray-300 transition"
-                      title={job.leadType === 'LOCAL' ? (job.issueDetected === 'NO_WEBSITE' ? 'Check Map' : 'Audit Website') : 'View Post'}
+                      title={job.leadType === 'LOCAL' ? (job.issueDetected === 'NO_WEBSITE' ? 'Check Map' : (job.issueDetected === 'BROKEN_WEBSITE' ? 'View Cached Archive' : 'Audit Website')) : 'View Post'}
                     >
                       <ExternalLink size={14} />
                     </a>

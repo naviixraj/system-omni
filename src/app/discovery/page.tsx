@@ -270,14 +270,16 @@ export default function Discovery() {
                   selectedJob.leadType === 'LOCAL' 
                     ? (selectedJob.issueDetected === 'NO_WEBSITE' 
                         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.title + " " + (selectedJob.district || ""))}` 
-                        : selectedJob.url)
+                        : selectedJob.issueDetected === 'BROKEN_WEBSITE'
+                            ? `https://web.archive.org/web/*/${selectedJob.url}`
+                            : selectedJob.url)
                     : selectedJob.url
                 } 
                 target="_blank" 
                 className="premium-button text-sm flex-1 text-center"
               >
                 {selectedJob.leadType === 'LOCAL' 
-                  ? (selectedJob.issueDetected === 'NO_WEBSITE' ? 'Open in Google Maps' : 'Audit Broken Website') 
+                  ? (selectedJob.issueDetected === 'NO_WEBSITE' ? 'Open in Google Maps' : (selectedJob.issueDetected === 'BROKEN_WEBSITE' ? 'View Cached Archive' : 'Audit Website')) 
                   : 'View Original Post'}
               </a>
               <button onClick={(e) => saveJob(selectedJob, e)} className="premium-button-primary text-sm flex-1 flex items-center justify-center gap-2">
