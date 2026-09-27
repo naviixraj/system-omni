@@ -268,18 +268,22 @@ export default function Discovery() {
               <a 
                 href={
                   selectedJob.leadType === 'LOCAL' 
-                    ? (selectedJob.issueDetected === 'NO_WEBSITE' 
-                        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.title + " " + (selectedJob.district || ""))}` 
-                        : selectedJob.issueDetected === 'ERROR'
-                            ? `https://web.archive.org/web/*/${selectedJob.url}`
-                            : selectedJob.url)
+                    ? selectedJob.issueDetected === 'NO_WEBSITE' ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.title + " " + (selectedJob.district || ""))}`
+                    : selectedJob.issueDetected === 'ERROR' ? `https://web.archive.org/web/*/${selectedJob.url}`
+                    : selectedJob.issueDetected === 'SLOW_LOAD' ? `https://pagespeed.web.dev/analysis?url=${selectedJob.url}`
+                    : selectedJob.issueDetected === 'NOT_MOBILE_FRIENDLY' ? `https://search.google.com/search-console/mobile-friendly?url=${selectedJob.url}`
+                    : selectedJob.url
                     : selectedJob.url
                 } 
                 target="_blank" 
                 className="premium-button text-sm flex-1 text-center"
               >
                 {selectedJob.leadType === 'LOCAL' 
-                  ? (selectedJob.issueDetected === 'NO_WEBSITE' ? 'Open in Google Maps' : (selectedJob.issueDetected === 'ERROR' ? 'View Cached Archive' : 'Audit Website')) 
+                  ? (selectedJob.issueDetected === 'NO_WEBSITE' ? 'Open in Google Maps' 
+                    : selectedJob.issueDetected === 'ERROR' ? 'View Cached Archive' 
+                    : selectedJob.issueDetected === 'SLOW_LOAD' ? 'Run PageSpeed Audit'
+                    : selectedJob.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'Run Mobile UX Audit'
+                    : 'Audit Website') 
                   : 'View Original Post'}
               </a>
               <button onClick={(e) => saveJob(selectedJob, e)} className="premium-button-primary text-sm flex-1 flex items-center justify-center gap-2">
