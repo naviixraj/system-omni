@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ExternalLink, Loader2, Copy, Check, Trash2 } from "lucide-react";
+import { Sparkles, ExternalLink, Loader2, Copy, Check, RotateCcw } from "lucide-react";
 
 export default function Pipeline() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -19,10 +19,14 @@ export default function Pipeline() {
   const handleUnsave = async (jobId: string) => {
     setDeletingId(jobId);
     try {
-      await fetch(`/api/saved-jobs?id=${jobId}`, { method: "DELETE" });
+      await fetch("/api/saved-jobs", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: jobId, status: 'SAVED' }),
+      });
       setJobs((prev) => prev.filter((job) => job.id !== jobId));
     } catch (error) {
-      console.error("Failed to unsave job", error);
+      console.error("Failed to return job to discovery", error);
     }
     setDeletingId(null);
   };
@@ -124,10 +128,10 @@ export default function Pipeline() {
                   <button
                     onClick={() => handleUnsave(job.id)}
                     disabled={deletingId === job.id}
-                    className="text-gray-500 hover:text-red-400 transition"
-                    title="Unsave / Remove"
+                    className="text-gray-500 hover:text-blue-400 transition"
+                    title="Return to Discovery Feed"
                   >
-                    {deletingId === job.id ? <Loader2 size={14} className="animate-spin text-red-400" /> : <Trash2 size={14} />}
+                    {deletingId === job.id ? <Loader2 size={14} className="animate-spin text-blue-400" /> : <RotateCcw size={14} />}
                   </button>
                 </div>
               </div>
