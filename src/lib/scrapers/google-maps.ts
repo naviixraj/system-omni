@@ -84,12 +84,23 @@ async function runOSMQuery(city: string, amenity: string) {
 }
 
 async function scrapeOpenStreetMapFallback() {
-  const cities = ["Chennai", "Coimbatore", "Mumbai", "Bangalore", "Madurai"];
-  const amenities = ["restaurant", "hospital", "dentist", "cafe", "pharmacy", "clinic"];
+  // Heavy focus on Tamil Nadu local areas
+  const tnCities = [
+    "Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", 
+    "Tirunelveli", "Erode", "Vellore", "Thoothukudi", "Dindigul", 
+    "Thanjavur", "Kanyakumari", "Karur", "Ooty"
+  ];
+  // Secondary other state targets
+  const otherCities = ["Bangalore", "Kochi", "Hyderabad", "Mumbai"];
+  
+  // 80% of the time, pick a Tamil Nadu city. 20% of the time, pick another state.
+  const allCities = [...tnCities, ...tnCities, ...tnCities, ...otherCities];
+  
+  const amenities = ["restaurant", "hospital", "dentist", "cafe", "pharmacy", "clinic", "gym", "spa", "college"];
   
   // Pick 3 random combinations to run at the same time to guarantee huge volume
   const queries = Array.from({ length: 3 }).map(() => ({
-    city: cities[Math.floor(Math.random() * cities.length)],
+    city: allCities[Math.floor(Math.random() * allCities.length)],
     amenity: amenities[Math.floor(Math.random() * amenities.length)]
   }));
 
