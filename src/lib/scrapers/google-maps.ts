@@ -45,10 +45,10 @@ async function scrapeOpenStreetMapFallback() {
   
   // Strict Filter: ONLY return businesses that have a registered website
   const overpassQuery = `
-    [out:json][timeout:25];
+    [out:json][timeout:60];
     area["name"="${city}"]->.searchArea;
     node["amenity"="${amenity}"](area.searchArea);
-    out 50;
+    out 150;
   `;
   
   try {

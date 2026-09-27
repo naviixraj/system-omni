@@ -292,7 +292,7 @@ export default function Discovery() {
                 <Zap className="text-yellow-400" size={18} fill="currentColor" />
                 <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">True AI Intelligence Report</h3>
               </div>
-              <div className="p-5 flex flex-col gap-5">
+              <div className="p-5 flex flex-col gap-5 overflow-y-auto max-h-[250px] custom-scrollbar">
                 {isAnalyzing || !aiAnalysis ? (
                   <div className="flex flex-col items-center justify-center py-6 gap-3">
                      <Loader2 className="animate-spin text-purple-400" size={28} />
