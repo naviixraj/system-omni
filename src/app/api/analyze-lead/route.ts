@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       Respond in STRICT JSON format with exactly these two keys:
       {
         "requirements": "Write a simple but properly explained technical breakdown of the project. Use 2-3 bullet points explaining exactly what features to build.",
-        "suggestedPrice": "Calculate a specific total price in INR (₹) strictly within their budget. VERY IMPORTANT: Check their budget currency! If it is USD ($), multiply by 84. If it is EUR (€), multiply by 92. If it is GBP (£), multiply by 107. Break this total bid down into 2-3 line items based on the SPECIFIC PROJECT WORK (e.g., 'Total Bid: ₹63,450. Breakdown: UI Design (₹20,000), React Frontend (₹30,000), Database Setup (₹13,450)')."
+        "suggestedPrice": "Calculate a specific total price in INR (₹). VERY IMPORTANT: The budget '${job.budget}' could be in ANY global currency (USD, EUR, GBP, AUD, SGD, AED, etc). You MUST use your knowledge to perfectly convert their specific currency into Indian Rupees (INR). Break this total INR bid down into 2-3 line items based on the SPECIFIC PROJECT WORK (e.g., 'Total Bid: ₹63,450. Breakdown: UI Design (₹20,000), React Frontend (₹30,000), Database Setup (₹13,450)')."
       }
     `;
 
@@ -60,27 +60,48 @@ export async function POST(req: Request) {
     const parseBudget = (budgetStr: string | null) => {
       if (!budgetStr) return { min: 0, max: 0, multiplier: 1 };
       
-      let multiplier = 1; // Default to 1 (Assume it's already INR)
+      let multiplier = 1; 
       const lower = budgetStr.toLowerCase();
       
-      // Global Currency Exchange Rates
-      if (lower.includes('$') || lower.includes('usd')) multiplier = 84;
-      else if (lower.includes('€') || lower.includes('eur')) multiplier = 92;
-      else if (lower.includes('£') || lower.includes('gbp')) multiplier = 107;
-      else if (lower.includes('aud') || lower.includes('cad')) multiplier = 55;
+      // Comprehensive Global Currency Map to INR (₹)
+      const rates: Record<string, number> = {
+        'usd': 84, '$': 84,
+        'eur': 92, '€': 92,
+        'gbp': 107, '£': 107,
+        'aud': 55, 'a$': 55,
+        'cad': 62, 'c$': 62,
+        'sgd': 63, 's$': 63,
+        'aed': 23, 'dirham': 23,
+        'nzd': 51, 'nz$': 51,
+        'chf': 95, 'franc': 95,
+        'jpy': 0.56, '¥': 0.56,
+        'cny': 11.6, 'rmb': 11.6,
+        'zar': 4.4, 'rand': 4.4,
+        'sar': 22.4,
+        'inr': 1, '₹': 1, 'rs': 1
+      };
+
+      // Detect the exact currency
+      let detected = false;
+      for (const [key, rate] of Object.entries(rates)) {
+        if (lower.includes(key)) {
+          multiplier = rate;
+          detected = true;
+          break;
+        }
+      }
       
       const noCommas = budgetStr.replace(/,/g, '');
-      const numbers = noCommas.match(/\d+/g);
+      const numbers = noCommas.match(/\d+(\.\d+)?/g);
       
       if (!numbers) return { min: 0, max: 0, multiplier };
       
-      const min = parseInt(numbers[0]);
-      const max = parseInt(numbers[numbers.length - 1]);
+      const min = parseFloat(numbers[0]);
+      const max = parseFloat(numbers[numbers.length - 1]);
       
-      // SMART CATCH: If no currency symbol was found, but the max budget is tiny (like 750)
-      // and doesn't explicitly say INR or ₹, it is almost definitely a USD/EUR job.
-      if (multiplier === 1 && !lower.includes('₹') && !lower.includes('inr') && max < 5000) {
-        multiplier = 84; // Default to USD conversion to prevent extremely low bids
+      // Failsafe: If no explicit currency found, but max is suspiciously low, default to USD
+      if (!detected && max < 5000) {
+        multiplier = 84; 
       }
       
       return { min, max, multiplier };
@@ -102,7 +123,7 @@ export async function POST(req: Request) {
       
       const parsed = parseBudget(job.budget);
       if (parsed.max > 0) {
-        // Convert to INR using the calculated global exchange rate
+        // Convert to INR perfectly using the massive currency dictionary
         const minINR = parsed.min * parsed.multiplier;
         const maxINR = parsed.max * parsed.multiplier;
         
