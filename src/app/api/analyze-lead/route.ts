@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       Respond in STRICT JSON format with exactly these two keys:
       {
         "requirements": "Write a simple but properly explained technical breakdown of the project. Use 2-3 bullet points explaining exactly what features to build.",
-        "suggestedPrice": "Write a specific target price in INR (₹) that falls STRICTLY WITHIN the client's provided budget range. If their budget is USD ($), multiply it by 84 to convert to INR. Determine the exact price by analyzing the technical difficulty of the job (e.g., charge near their minimum for simple fixes; charge near their maximum for complex apps). Give a 1-sentence justification explaining how the project's difficulty justifies this exact price."
+        "suggestedPrice": "Calculate a highly specific price in INR (₹) that falls strictly within their budget range. If their budget is USD ($), multiply it by 84 to convert to INR. VERY IMPORTANT: Do NOT pick a perfectly round number (like ₹40,000). Pick a highly specific, organic number (like ₹39,450 or ₹41,200) to make the bid look carefully calculated by a human based on exact difficulty. Give a 1-sentence justification for the price."
       }
     `;
 
@@ -37,6 +37,7 @@ export async function POST(req: Request) {
       messages: [{ role: 'user', content: prompt }],
       model: 'llama-3.1-70b-versatile',
       response_format: { type: 'json_object' },
+      temperature: 0.7, // Added higher temperature to ensure varied, organic responses
     });
 
     const text = chatCompletion.choices[0]?.message?.content || "{}";
@@ -56,7 +57,6 @@ export async function POST(req: Request) {
     let requirements = "";
     let suggestedPrice = "";
 
-    // Smart budget parser that calculates both Min and Max to allow difficulty-based pricing
     const parseBudget = (budgetStr: string | null) => {
       if (!budgetStr) return { min: 0, max: 0, isUSD: false };
       
@@ -77,13 +77,13 @@ export async function POST(req: Request) {
     if (job.leadType === "LOCAL") {
       if (job.issueDetected === "NO_WEBSITE") {
         requirements = `• Build a modern 3-page landing site for a ${job.niche} business.\n• Implement a mobile-first design with a sticky "Call Now" button.\n• Integrate Google Maps & SEO tags to capture local traffic in ${job.district}.`;
-        suggestedPrice = "₹25,000 (Base Setup) + ₹2,000/mo Maintenance. Reason: Standard 3-page sites are low complexity but offer immense local SEO value.";
+        suggestedPrice = "₹24,500 (Base Setup) + ₹2,000/mo Maintenance. Reason: Standard 3-page sites are low complexity but offer immense local SEO value.";
       } else if (job.issueDetected === "NOT_MOBILE_FRIENDLY") {
         requirements = `• Perform a complete UI/UX responsive overhaul.\n• Rebuild the frontend using Tailwind CSS so it perfectly fits mobile screens.\n• Optimize image sizes to improve loading speeds for mobile users.`;
-        suggestedPrice = "₹15,000 (Responsive Redesign). Reason: You are just modifying existing assets using Tailwind classes, which is low-to-medium difficulty.";
+        suggestedPrice = "₹14,850 (Responsive Redesign). Reason: You are just modifying existing assets using Tailwind classes, which is low-to-medium difficulty.";
       } else {
         requirements = `• Conduct a technical performance audit.\n• Fix the "${job.issueDetected}" issue affecting their current site.\n• Migrate hosting or optimize their heavy theme for lightning-fast speeds.`;
-        suggestedPrice = "₹28,500 (Technical Optimization). Reason: Server migrations and deep performance debugging require high-level technical expertise.";
+        suggestedPrice = "₹28,200 (Technical Optimization). Reason: Server migrations and deep performance debugging require high-level technical expertise.";
       }
     } else {
       requirements = `• Develop a scalable MVP utilizing React/Next.js based on their request for "${job.title}".\n• Ensure clean component architecture and fast delivery.\n• Provide a 2-3 week roadmap to the client.`;
@@ -94,28 +94,34 @@ export async function POST(req: Request) {
         const maxINR = parsed.isUSD ? parsed.max * 84 : parsed.max;
         
         const titleLower = job.title.toLowerCase();
-        let bid = 0;
+        let baseBid = 0;
         let reason = "";
 
-        // Complexity-based pricing heuristic
         if (titleLower.includes("simple") || titleLower.includes("fix") || titleLower.includes("basic") || titleLower.includes("html") || titleLower.includes("wordpress")) {
-           bid = minINR + ((maxINR - minINR) * 0.2); // Bid close to their minimum
+           baseBid = minINR + ((maxINR - minINR) * 0.2); 
            reason = "Because this is a low-complexity task, bidding near their minimum budget guarantees you win the contract over greedy freelancers.";
         } else if (titleLower.includes("react") || titleLower.includes("app") || titleLower.includes("backend") || titleLower.includes("complex") || titleLower.includes("ecommerce")) {
-           bid = maxINR * 0.9; // Bid close to their maximum (10% under to win)
-           reason = "Because this requires complex full-stack architecture, we are pricing it near their maximum limit (but 10% under to maintain a competitive edge).";
+           baseBid = maxINR * 0.9; 
+           reason = "Because this requires complex full-stack architecture, we are pricing it near their maximum limit (but under to maintain a competitive edge).";
         } else {
-           bid = (minINR + maxINR) / 2; // Exact midpoint
-           reason = "Because the technical difficulty is moderate, bidding the exact median of their budget signals a fair and honest estimation.";
+           baseBid = (minINR + maxINR) / 2; 
+           reason = "Because the technical difficulty is moderate, bidding the median of their budget signals a fair and honest estimation.";
         }
+        
+        // ADD ORGANIC RANDOM VARIANCE (± 4%) so bids never look robotic or repeated
+        const variance = (Math.random() * 0.08) - 0.04; 
+        let finalBid = baseBid * (1 + variance);
+        
+        // Round to nearest 50 rupees to make it look like a real human calculation (e.g., 31450 instead of 31457)
+        finalBid = Math.round(finalBid / 50) * 50;
         
         if (job.budget?.includes("/hr") || job.budget?.includes("/mo")) {
           suggestedPrice = `Pitch their exact rate of ${job.budget}, but offer the first 5 hours risk-free to build absolute trust.`;
         } else {
-          suggestedPrice = `Bid exactly ₹${Math.floor(bid).toLocaleString('en-IN')}. ${reason}`;
+          suggestedPrice = `Bid exactly ₹${finalBid.toLocaleString('en-IN')}. ${reason}`;
         }
       } else {
-        suggestedPrice = "Offer a Free Discovery Call to audit their complexity, then pitch ₹30,000+ for the MVP.";
+        suggestedPrice = "Offer a Free Discovery Call to audit their complexity, then pitch ₹29,500+ for the MVP.";
       }
     }
 
