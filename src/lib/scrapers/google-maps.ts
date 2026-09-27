@@ -19,7 +19,8 @@ async function auditWebsite(url: string): Promise<string | null> {
     if (!response.ok) return 'ERROR';
 
     const loadTime = endTime - startTime;
-    if (loadTime > 3500) return 'SLOW_LOAD';
+    // Lowered threshold to 1.5 seconds to aggressively catch unoptimized websites
+    if (loadTime > 1500) return 'SLOW_LOAD';
 
     const html = await response.text();
     const hasViewport = html.toLowerCase().includes('meta name="viewport"');
@@ -32,84 +33,67 @@ async function auditWebsite(url: string): Promise<string | null> {
 }
 
 // ==========================================
-// STRICT WEBSITE-ONLY OPEN-SOURCE SCRAPER
+// MASSIVE BULK OPEN-SOURCE SCRAPER
 // ==========================================
-async function scrapeOpenStreetMapFallback() {
-  const cities = ["Chennai", "Coimbatore", "Mumbai", "Bangalore", "Madurai"];
-  const amenities = ["restaurant", "hospital", "dentist", "cafe", "pharmacy", "clinic"];
-  
-  const city = cities[Math.floor(Math.random() * cities.length)];
-  const amenity = amenities[Math.floor(Math.random() * amenities.length)];
-  
-  console.log(`[CRON] Scraping REAL ${amenity}s in ${city} via OSM (Strict Filter)...`);
-  
-  // Strict Filter: ONLY return businesses that have a registered website
+async function runOSMQuery(city: string, amenity: string) {
+  console.log(`[CRON] Scraping REAL ${amenity}s in ${city} via OSM...`);
   const overpassQuery = `
     [out:json][timeout:60];
     area["name"="${city}"]->.searchArea;
     node["amenity"="${amenity}"](area.searchArea);
-    out 150;
+    out 100;
   `;
-  
   try {
     const response = await fetch('https://lz4.overpass-api.de/api/interpreter', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'FreelanceCRM/1.0'
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'FreelanceCRM/1.0' },
       body: `data=${encodeURIComponent(overpassQuery)}`
     });
-    
-    if (!response.ok) {
-      console.log("[CRON] OSM API Rate limited.");
-      return;
-    }
-    
+    if (!response.ok) return;
     const data = await response.json();
-    if (!data.elements || data.elements.length === 0) {
-      console.log(`[CRON] No results found for ${amenity}s in ${city}.`);
-      return;
-    }
+    if (!data.elements || data.elements.length === 0) return;
 
     for (const element of data.elements) {
       if (!element.tags || !element.tags.name) continue;
-      
       const businessName = element.tags.name;
       let websiteUrl = element.tags.website || element.tags['contact:website'] || null;
-      
       const exists = await prisma.lead.findFirst({ where: { title: businessName } });
       if (exists) continue;
 
       let issueDetected = null;
-
       if (!websiteUrl) {
         issueDetected = 'NO_WEBSITE';
       } else {
         if (!websiteUrl.startsWith('http')) websiteUrl = 'http://' + websiteUrl;
-        console.log(`[CRON] Auditing Strict Real URL: ${websiteUrl}`);
         issueDetected = await auditWebsite(websiteUrl);
       }
 
       if (issueDetected) {
         await prisma.lead.create({
           data: {
-            title: businessName,
-            platform: 'OPEN_STREET_MAP',
-            district: city,
-            niche: amenity,
-            url: websiteUrl || '',
-            issueDetected: issueDetected,
-            leadType: 'LOCAL',
-            status: 'SAVED' 
+            title: businessName, platform: 'OPEN_STREET_MAP', district: city, niche: amenity,
+            url: websiteUrl || '', issueDetected: issueDetected, leadType: 'LOCAL', status: 'SAVED' 
           }
         });
         console.log(`[CRON] ✅ Saved Lead: ${businessName} [Issue: ${issueDetected}]`);
       }
     }
   } catch (err) {
-    console.error("[CRON] Error during OpenStreetMap scrape:", err);
+    console.error("[CRON] Error during OSM query:", err);
   }
+}
+
+async function scrapeOpenStreetMapFallback() {
+  const cities = ["Chennai", "Coimbatore", "Mumbai", "Bangalore", "Madurai"];
+  const amenities = ["restaurant", "hospital", "dentist", "cafe", "pharmacy", "clinic"];
+  
+  // Pick 3 random combinations to run at the same time to guarantee huge volume
+  const queries = Array.from({ length: 3 }).map(() => ({
+    city: cities[Math.floor(Math.random() * cities.length)],
+    amenity: amenities[Math.floor(Math.random() * amenities.length)]
+  }));
+
+  await Promise.all(queries.map(q => runOSMQuery(q.city, q.amenity)));
 }
 
 export async function scrapeGoogleMapsDrip() {
