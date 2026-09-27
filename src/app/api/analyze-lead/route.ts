@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       Respond in STRICT JSON format with exactly these two keys:
       {
         "requirements": "Write a simple but properly explained technical breakdown of the project. Use 2-3 bullet points explaining exactly what features to build.",
-        "suggestedPrice": "Calculate a specific total price in INR (₹) strictly within their budget (Convert USD to INR by multiplying by 84). Very importantly, break this total bid down into 2-3 line items based on the SPECIFIC PROJECT WORK (e.g., 'Total Bid: ₹31,450. Breakdown: UI Design (₹10,000), React Frontend (₹15,000), Database Setup (₹6,450)'). This shows the client exactly how the bid rate changes according to the work required."
+        "suggestedPrice": "Calculate a specific total price in INR (₹) strictly within their budget. VERY IMPORTANT: Check their budget currency! If it is USD ($), multiply by 84. If it is EUR (€), multiply by 92. If it is GBP (£), multiply by 107. Break this total bid down into 2-3 line items based on the SPECIFIC PROJECT WORK (e.g., 'Total Bid: ₹63,450. Breakdown: UI Design (₹20,000), React Frontend (₹30,000), Database Setup (₹13,450)')."
       }
     `;
 
@@ -58,20 +58,32 @@ export async function POST(req: Request) {
     let suggestedPrice = "";
 
     const parseBudget = (budgetStr: string | null) => {
-      if (!budgetStr) return { min: 0, max: 0, isUSD: false };
+      if (!budgetStr) return { min: 0, max: 0, multiplier: 1 };
       
-      const isUSD = budgetStr.includes('$') || budgetStr.toLowerCase().includes('usd');
+      let multiplier = 1; // Default to 1 (Assume it's already INR)
+      const lower = budgetStr.toLowerCase();
+      
+      // Global Currency Exchange Rates
+      if (lower.includes('$') || lower.includes('usd')) multiplier = 84;
+      else if (lower.includes('€') || lower.includes('eur')) multiplier = 92;
+      else if (lower.includes('£') || lower.includes('gbp')) multiplier = 107;
+      else if (lower.includes('aud') || lower.includes('cad')) multiplier = 55;
+      
       const noCommas = budgetStr.replace(/,/g, '');
       const numbers = noCommas.match(/\d+/g);
       
-      if (!numbers) return { min: 0, max: 0, isUSD };
-      if (numbers.length === 1) return { min: parseInt(numbers[0]), max: parseInt(numbers[0]), isUSD };
+      if (!numbers) return { min: 0, max: 0, multiplier };
       
-      return { 
-        min: parseInt(numbers[0]), 
-        max: parseInt(numbers[numbers.length - 1]), 
-        isUSD 
-      };
+      const min = parseInt(numbers[0]);
+      const max = parseInt(numbers[numbers.length - 1]);
+      
+      // SMART CATCH: If no currency symbol was found, but the max budget is tiny (like 750)
+      // and doesn't explicitly say INR or ₹, it is almost definitely a USD/EUR job.
+      if (multiplier === 1 && !lower.includes('₹') && !lower.includes('inr') && max < 5000) {
+        multiplier = 84; // Default to USD conversion to prevent extremely low bids
+      }
+      
+      return { min, max, multiplier };
     };
 
     if (job.leadType === "LOCAL") {
@@ -90,8 +102,9 @@ export async function POST(req: Request) {
       
       const parsed = parseBudget(job.budget);
       if (parsed.max > 0) {
-        const minINR = parsed.isUSD ? parsed.min * 84 : parsed.min;
-        const maxINR = parsed.isUSD ? parsed.max * 84 : parsed.max;
+        // Convert to INR using the calculated global exchange rate
+        const minINR = parsed.min * parsed.multiplier;
+        const maxINR = parsed.max * parsed.multiplier;
         
         const titleLower = job.title.toLowerCase();
         let baseBid = 0;
@@ -99,20 +112,17 @@ export async function POST(req: Request) {
 
         if (titleLower.includes("simple") || titleLower.includes("fix") || titleLower.includes("basic") || titleLower.includes("html") || titleLower.includes("wordpress")) {
            baseBid = minINR + ((maxINR - minINR) * 0.2); 
-           // Low complexity breakdown
            const p1 = Math.round((baseBid * 0.4) / 50) * 50;
            const p2 = Math.round((baseBid * 0.6) / 50) * 50;
            breakdown = `UI Fixes (₹${p1.toLocaleString('en-IN')}), Implementation (₹${p2.toLocaleString('en-IN')})`;
         } else if (titleLower.includes("react") || titleLower.includes("app") || titleLower.includes("backend") || titleLower.includes("complex") || titleLower.includes("ecommerce")) {
            baseBid = maxINR * 0.9; 
-           // High complexity breakdown
            const p1 = Math.round((baseBid * 0.3) / 50) * 50;
            const p2 = Math.round((baseBid * 0.5) / 50) * 50;
            const p3 = Math.round((baseBid * 0.2) / 50) * 50;
            breakdown = `Frontend React (₹${p1.toLocaleString('en-IN')}), Backend Architecture (₹${p2.toLocaleString('en-IN')}), Deployment (₹${p3.toLocaleString('en-IN')})`;
         } else {
            baseBid = (minINR + maxINR) / 2; 
-           // Medium complexity breakdown
            const p1 = Math.round((baseBid * 0.4) / 50) * 50;
            const p2 = Math.round((baseBid * 0.6) / 50) * 50;
            breakdown = `Component Design (₹${p1.toLocaleString('en-IN')}), Logic & Integration (₹${p2.toLocaleString('en-IN')})`;
