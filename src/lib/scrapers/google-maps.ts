@@ -45,10 +45,10 @@ async function scrapeOpenStreetMapFallback() {
   
   // Overpass API Query Language (Finds real businesses in a specific city)
   const overpassQuery = `
-    [out:json][timeout:15];
+    [out:json][timeout:25];
     area["name"="${city}"]->.searchArea;
     node["amenity"="${amenity}"](area.searchArea);
-    out 20;
+    out 50;
   `;
   
   try {
@@ -69,11 +69,8 @@ async function scrapeOpenStreetMapFallback() {
     const data = await response.json();
     if (!data.elements || data.elements.length === 0) return;
 
-    // Pick 3 random businesses from the real-world results
-    const shuffled = data.elements.sort(() => 0.5 - Math.random());
-    const topResults = shuffled.slice(0, 3);
-
-    for (const element of topResults) {
+    // Process ALL businesses found by the API instead of just 3
+    for (const element of data.elements) {
       if (!element.tags || !element.tags.name) continue;
       
       const businessName = element.tags.name;
