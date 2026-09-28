@@ -54,7 +54,7 @@ export default function Dashboard() {
 
       {/* KPI GRID */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="premium-panel p-6 flex flex-col justify-between">
+        <div className="premium-panel p-6 flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.1)] transition-all duration-300">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
               <Activity className="text-blue-400" size={20} />
@@ -67,7 +67,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="premium-panel p-6 flex flex-col justify-between">
+        <div className="premium-panel p-6 flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.1)] transition-all duration-300">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
               <Database className="text-purple-400" size={20} />
@@ -79,7 +79,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="premium-panel p-6 flex flex-col justify-between">
+        <div className="premium-panel p-6 flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.1)] transition-all duration-300">
           <div className="flex justify-between items-start mb-4">
             <div className="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center border border-pink-500/20">
               <TrendingUp className="text-pink-400" size={20} />

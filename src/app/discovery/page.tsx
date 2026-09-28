@@ -214,7 +214,7 @@ export default function Discovery() {
             <div 
               key={job.id} 
               onClick={() => handleOpenModal(job)}
-              className={`premium-panel flex justify-between items-center p-6 group cursor-pointer hover:ring-1 hover:ring-white/20`}
+              className="premium-panel flex justify-between items-center p-6 group cursor-pointer hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] transition-all duration-300"
             >
               <div>
                 <div className="flex items-center gap-3 mb-2.5">
