@@ -163,23 +163,23 @@ export default function Discovery() {
 
   return (
     <div className="max-w-6xl mx-auto pb-10 relative">
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 md:mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-white mb-2 flex items-center gap-3">
-            <Globe2 className="text-blue-500" size={28} />
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1 md:mb-2 flex items-center gap-3">
+            <Globe2 className="text-blue-500" size={26} />
             Global Discovery
           </h1>
-          <p className="text-gray-400 text-sm">Live structured feed. Refreshed every 60 seconds.</p>
+          <p className="text-gray-400 text-xs md:text-sm">Live structured feed. Refreshed every 60 seconds.</p>
         </div>
-        <div className="flex gap-4">
-          <div className="premium-panel flex items-center px-4 py-2 gap-2 focus-within:border-blue-500/40 focus-within:ring-1 focus-within:ring-blue-500/20 transition-all">
-            <Search size={16} className="text-gray-400" />
+        <div className="flex gap-4 w-full sm:w-auto">
+          <div className="premium-panel flex items-center px-4 py-2 gap-2 focus-within:border-blue-500/40 focus-within:ring-1 focus-within:ring-blue-500/20 transition-all w-full sm:w-auto">
+            <Search size={16} className="text-gray-400 shrink-0" />
             <input 
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by city, name, role..." 
-              className="bg-transparent border-none outline-none text-sm text-gray-200 placeholder-gray-500 w-52 md:w-64"
+              className="bg-transparent border-none outline-none text-sm text-gray-200 placeholder-gray-500 w-full sm:w-52 md:w-64"
             />
             {searchQuery && (
               <button 
@@ -278,10 +278,10 @@ export default function Discovery() {
               <div 
                 key={job.id} 
                 onClick={() => handleOpenModal(job)}
-                className="premium-panel flex justify-between items-center p-6 group cursor-pointer hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] transition-all duration-300"
+                className="premium-panel flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-6 gap-4 group cursor-pointer hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] transition-all duration-300"
               >
-                <div>
-                  <div className="flex items-center gap-3 mb-2.5">
+                <div className="w-full sm:w-auto">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
                     <span className={`premium-badge ${job.leadType === 'LOCAL' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
                       {job.platform}
                     </span>
@@ -301,15 +301,15 @@ export default function Discovery() {
                       </span>
                     )}
                   </div>
-                  <h4 className="text-lg font-bold text-gray-200 group-hover:text-white transition-colors tracking-tight">{job.title}</h4>
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-1 w-[80%]">
+                  <h4 className="text-base sm:text-lg font-bold text-gray-200 group-hover:text-white transition-colors tracking-tight">{job.title}</h4>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-2 sm:line-clamp-1 w-full sm:w-[80%]">
                     {job.leadType === 'LOCAL' ? `System detected website issue: ${job.issueDetected}. High priority outreach target.` : `Client is actively looking for a developer to handle this project. Click view to see full brief.`}
                   </p>
                 </div>
                 
-                <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                  <p className="font-semibold text-gray-100 text-lg">
-                    {job.leadType === 'LOCAL' ? <span className="text-orange-400/90 text-sm">High Target</span> : job.budget}
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 w-full sm:w-auto flex-shrink-0 pt-3 sm:pt-0 border-t border-white/[0.04] sm:border-none">
+                  <p className="font-semibold text-gray-100 text-base sm:text-lg">
+                    {job.leadType === 'LOCAL' ? <span className="text-orange-400/90 text-xs sm:text-sm">High Target</span> : job.budget}
                   </p>
                   <div className="flex items-center gap-2">
                     {/* Call Option Button (Direct tel: or Google Call lookup) */}
@@ -335,7 +335,7 @@ export default function Discovery() {
                     </a>
 
                     {/* Move to Pipeline Button */}
-                    <button onClick={(e) => saveJob(job, e)} className="premium-button-primary text-xs flex items-center gap-2 px-3 py-1.5">
+                    <button onClick={(e) => saveJob(job, e)} className="premium-button-primary text-xs flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5">
                       <Save size={13} /> Pipeline
                     </button>
 
@@ -361,7 +361,7 @@ export default function Discovery() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md animate-in fade-in duration-200 custom-scrollbar" onClick={() => setSelectedJob(null)}>
           <div className="flex min-h-full items-center justify-center p-4">
             <div 
-              className="premium-panel w-full max-w-3xl p-8 relative flex flex-col gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 my-8" 
+              className="premium-panel w-full max-w-3xl p-4 sm:p-8 relative flex flex-col gap-4 sm:gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 my-4 sm:my-8" 
               onClick={(e) => e.stopPropagation()} // Prevent clicking inside modal from closing it
             >
             <button 
@@ -474,7 +474,7 @@ export default function Discovery() {
             )}
 
             {/* Modal Footer Actions */}
-            <div className="flex gap-4 mt-2 pt-6 border-t border-white/[0.04] justify-between items-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2 pt-4 sm:pt-6 border-t border-white/[0.04] justify-between items-stretch sm:items-center">
               <a 
                 href={
                   selectedJob.leadType === 'LOCAL' 

@@ -99,7 +99,7 @@ export default function Pipeline() {
 
     return (
       <div 
-        className="w-[360px] flex-shrink-0 flex flex-col"
+        className="w-full md:w-[360px] flex-shrink-0 flex flex-col"
         onDragOver={onDragOver}
         onDrop={(e) => onDrop(e, statusKey)}
       >
@@ -248,15 +248,15 @@ export default function Pipeline() {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto h-[calc(100vh-100px)] flex flex-col">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-[1400px] mx-auto min-h-[calc(100vh-100px)] flex flex-col">
+      <div className="flex justify-between items-center mb-6 md:mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">CRM Pipeline</h1>
-          <p className="text-gray-500 text-sm">Drag and drop leads to track your progress.</p>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1 tracking-tight">CRM Pipeline</h1>
+          <p className="text-gray-500 text-xs md:text-sm">Drag and drop leads to track your progress.</p>
         </div>
       </div>
 
-      <div className="flex-1 flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
+      <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-x-auto pb-4 custom-scrollbar">
         {renderColumn("QUEUED LEADS", "QUEUED", "bg-blue-500", "No saved leads. Hunt in the Discovery Feed!")}
         {renderColumn("PITCHED & WAITING", "PITCHED", "bg-purple-500", "Drag leads here after sending your AI pitch.")}
         {renderColumn("WON / CLOSED", "WON", "bg-emerald-500", "Drag deals here when the client hires you!")}
