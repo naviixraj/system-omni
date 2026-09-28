@@ -406,11 +406,10 @@ export default function Discovery() {
                   <button 
                     onClick={(e) => deleteJob(selectedJob.id, e)} 
                     disabled={deletingId === selectedJob.id}
-                    className="px-2.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold rounded-lg border border-red-500/20 flex items-center gap-1 transition"
+                    className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg border border-red-500/20 flex items-center justify-center transition"
                     title="Dismiss / Delete Lead from database"
                   >
                     {deletingId === selectedJob.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
-                    <span className="hidden sm:inline">Delete</span>
                   </button>
                 </div>
               </div>
