@@ -371,18 +371,42 @@ export default function Discovery() {
               <X size={20} />
             </button>
 
-            {/* Modal Header */}
+            {/* Modal Header Banner */}
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <span className={`premium-badge ${selectedJob.leadType === 'LOCAL' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
-                  {selectedJob.platform}
-                </span>
-                <span className="text-sm text-gray-400 font-medium">
-                  {selectedJob.leadType === 'LOCAL' ? `Located in ${selectedJob.district}` : 'Global Remote Lead'}
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className={`premium-badge ${selectedJob.leadType === 'LOCAL' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
+                    {selectedJob.platform}
+                  </span>
+                  <span className="text-xs text-gray-400 font-medium">
+                    {selectedJob.leadType === 'LOCAL' ? `Located in ${selectedJob.district}` : 'Global Remote Lead'}
+                  </span>
+                </div>
+
+                {/* Small Banner Call & Email Buttons */}
+                <div className="flex items-center gap-2">
+                  <a
+                    href={resolveLeadContact(selectedJob).callUrl}
+                    target={resolveLeadContact(selectedJob).phone ? "_self" : "_blank"}
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-lg border border-emerald-500/20 flex items-center gap-1.5 transition"
+                    title={resolveLeadContact(selectedJob).phone ? `Call ${resolveLeadContact(selectedJob).phone}` : `Look up phone for ${selectedJob.title}`}
+                  >
+                    <Phone size={13} /> Call
+                  </a>
+
+                  <a
+                    href={`mailto:${resolveLeadContact(selectedJob).email}?subject=${encodeURIComponent(`Website Upgrade for ${selectedJob.title}`)}&body=${encodeURIComponent(`Hi ${selectedJob.title} Team,\n\nI reviewed your online presence in ${selectedJob.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
+                    className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-semibold rounded-lg border border-blue-500/20 flex items-center gap-1.5 transition"
+                    title={`Send email to ${resolveLeadContact(selectedJob).email}`}
+                  >
+                    <Mail size={13} /> Email
+                  </a>
+                </div>
               </div>
+
               <div className="flex items-center gap-3 pr-10">
-                <h2 className="text-3xl font-extrabold text-white leading-tight">{selectedJob.title}</h2>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">{selectedJob.title}</h2>
                 {selectedJob.url && selectedJob.url !== '' && selectedJob.issueDetected !== 'NO_WEBSITE' && (
                   <a href={selectedJob.url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400 transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10" title="Visit Official Website">
                     <Globe2 size={20} />
