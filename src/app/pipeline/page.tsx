@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ExternalLink, Loader2, Copy, Check, RotateCcw, Globe2 } from "lucide-react";
+import { Sparkles, ExternalLink, Loader2, Copy, Check, RotateCcw, Globe2, Trash2, Mail, Phone } from "lucide-react";
 
 export default function Pipeline() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -27,6 +27,21 @@ export default function Pipeline() {
       setJobs((prev) => prev.filter((job) => job.id !== jobId));
     } catch (error) {
       console.error("Failed to return job to discovery", error);
+    }
+    setDeletingId(null);
+  };
+
+  const handleDeletePermanently = async (jobId: string) => {
+    setDeletingId(jobId);
+    try {
+      const res = await fetch(`/api/saved-jobs?id=${jobId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setJobs((prev) => prev.filter((job) => job.id !== jobId));
+      }
+    } catch (error) {
+      console.error("Failed to delete job permanently", error);
     }
     setDeletingId(null);
   };
@@ -143,6 +158,15 @@ export default function Pipeline() {
                   >
                     {deletingId === job.id ? <Loader2 size={14} className="animate-spin text-blue-400" /> : <RotateCcw size={14} />}
                   </button>
+
+                  <button
+                    onClick={() => handleDeletePermanently(job.id)}
+                    disabled={deletingId === job.id}
+                    className="text-gray-500 hover:text-red-400 transition"
+                    title="Delete permanently from database"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
               <div className="flex items-center gap-2 mb-1">
@@ -171,16 +195,27 @@ export default function Pipeline() {
                   )}
                 </button>
               ) : (
-                <div className="mt-1 relative group/pitch">
-                  <div className="text-[11px] text-gray-400 bg-[#121212] p-3 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto custom-scrollbar">
-                    {pitches[job.id]}
+                <div className="mt-1 space-y-2">
+                  <div className="relative group/pitch">
+                    <div className="text-[11px] text-gray-400 bg-[#121212] p-3 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto custom-scrollbar">
+                      {pitches[job.id]}
+                    </div>
+                    <button 
+                      onClick={() => copyToClipboard(job.id, pitches[job.id])}
+                      className="absolute top-1.5 right-1.5 p-1.5 bg-[#222] hover:bg-[#333] rounded-md transition text-gray-400 hover:text-white border border-white/5"
+                      title="Copy pitch to clipboard"
+                    >
+                      {copiedId === job.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => copyToClipboard(job.id, pitches[job.id])}
-                    className="absolute top-1.5 right-1.5 p-1.5 bg-[#222] hover:bg-[#333] rounded-md transition text-gray-400 hover:text-white border border-white/5"
+
+                  <a
+                    href={`mailto:?subject=${encodeURIComponent(`Partnership / Web Proposal: ${job.title}`)}&body=${encodeURIComponent(pitches[job.id])}`}
+                    className="w-full py-1.5 px-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
+                    title="Send this pitch via your email app"
                   >
-                    {copiedId === job.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-                  </button>
+                    <Mail size={13} /> Send Email with Pitch
+                  </a>
                 </div>
               )}
             </div>

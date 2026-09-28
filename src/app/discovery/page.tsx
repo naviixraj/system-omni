@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity } from "lucide-react";
+import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone } from "lucide-react";
 
 export default function Discovery() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -12,6 +12,8 @@ export default function Discovery() {
   const [sortOrder, setSortOrder] = useState("NEWEST"); 
   const [selectedPlatform, setSelectedPlatform] = useState("ALL"); 
   const [issueFilter, setIssueFilter] = useState("ALL"); 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchJobs = () => {
     fetch("/api/live-jobs")
@@ -37,6 +39,23 @@ export default function Discovery() {
     });
     setJobs(prev => prev.filter(j => j.id !== job.id));
     setSelectedJob(null); // Close modal if open
+  };
+
+  const deleteJob = async (jobId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setDeletingId(jobId);
+    try {
+      const res = await fetch(`/api/saved-jobs?id=${jobId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setJobs(prev => prev.filter(j => j.id !== jobId));
+        if (selectedJob?.id === jobId) setSelectedJob(null);
+      }
+    } catch (err) {
+      console.error("Failed to dismiss lead", err);
+    }
+    setDeletingId(null);
   };
 
   const parseBudget = (budgetStr: string | null) => {
@@ -93,6 +112,14 @@ export default function Discovery() {
     if (activeTab !== "ALL" && job.leadType !== activeTab) return false;
     if (selectedPlatform !== "ALL" && job.platform !== selectedPlatform) return false;
     if (issueFilter !== "ALL" && job.issueDetected !== issueFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchTitle = job.title?.toLowerCase().includes(q);
+      const matchDistrict = job.district?.toLowerCase().includes(q);
+      const matchPlatform = job.platform?.toLowerCase().includes(q);
+      const matchIssue = job.issueDetected?.toLowerCase().includes(q);
+      if (!matchTitle && !matchDistrict && !matchPlatform && !matchIssue) return false;
+    }
     return true;
   });
 
@@ -121,13 +148,24 @@ export default function Discovery() {
           <p className="text-gray-400 text-sm">Live structured feed. Refreshed every 60 seconds.</p>
         </div>
         <div className="flex gap-4">
-          <div className="premium-panel flex items-center px-4 py-2 gap-2 focus-within:border-white/20 transition-all">
+          <div className="premium-panel flex items-center px-4 py-2 gap-2 focus-within:border-blue-500/40 focus-within:ring-1 focus-within:ring-blue-500/20 transition-all">
             <Search size={16} className="text-gray-400" />
             <input 
               type="text" 
-              placeholder="Search roles..." 
-              className="bg-transparent border-none outline-none text-sm text-gray-200 placeholder-gray-500 w-48"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by city, name, role..." 
+              className="bg-transparent border-none outline-none text-sm text-gray-200 placeholder-gray-500 w-52 md:w-64"
             />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")} 
+                className="text-gray-400 hover:text-white transition p-0.5"
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -243,13 +281,45 @@ export default function Discovery() {
                 </p>
               </div>
               
-              <div className="flex flex-col items-end gap-4">
+              <div className="flex flex-col items-end gap-3 flex-shrink-0">
                 <p className="font-semibold text-gray-100 text-lg">
                   {job.leadType === 'LOCAL' ? <span className="text-orange-400/90 text-sm">High Target</span> : job.budget}
                 </p>
-                <div className="flex gap-2">
-                  <button onClick={(e) => saveJob(job, e)} className="premium-button-primary text-xs flex items-center gap-2">
-                    <Save size={14} /> Pipeline
+                <div className="flex items-center gap-2">
+                  {/* Quick Contact buttons if phone/website available */}
+                  {job.phone && (
+                    <a
+                      href={`tel:${job.phone}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/20 transition"
+                      title={`Call ${job.phone}`}
+                    >
+                      <Phone size={14} />
+                    </a>
+                  )}
+                  {/* Quick Mail outreach */}
+                  <a
+                    href={`mailto:?subject=${encodeURIComponent(`Website Upgrade for ${job.title}`)}&body=${encodeURIComponent(`Hi ${job.title} Team,\n\nI reviewed your online presence in ${job.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/20 transition"
+                    title="Draft Quick Outreach Email"
+                  >
+                    <Mail size={14} />
+                  </a>
+
+                  {/* Move to Pipeline Button */}
+                  <button onClick={(e) => saveJob(job, e)} className="premium-button-primary text-xs flex items-center gap-2 px-3 py-1.5">
+                    <Save size={13} /> Pipeline
+                  </button>
+
+                  {/* Dismiss / Delete Lead Button */}
+                  <button 
+                    onClick={(e) => deleteJob(job.id, e)} 
+                    disabled={deletingId === job.id}
+                    className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-transparent hover:border-red-500/20 transition"
+                    title="Dismiss / Delete Lead"
+                  >
+                    {deletingId === job.id ? <Loader2 size={14} className="animate-spin text-red-400" /> : <Trash2 size={14} />}
                   </button>
                 </div>
               </div>
@@ -398,6 +468,23 @@ export default function Discovery() {
                     : 'Audit Website') 
                   : 'View Original Post'}
               </a>
+              <a
+                href={`mailto:?subject=${encodeURIComponent(`Website Upgrade for ${selectedJob.title}`)}&body=${encodeURIComponent(`Hi ${selectedJob.title} Team,\n\nI reviewed your online presence in ${selectedJob.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
+                className="premium-button text-sm flex items-center justify-center gap-2 text-blue-400 border-blue-500/20 hover:bg-blue-500/10"
+                title="Send Quick Email"
+              >
+                <Mail size={16} /> Outreach Email
+              </a>
+
+              <button 
+                onClick={(e) => deleteJob(selectedJob.id, e)} 
+                disabled={deletingId === selectedJob.id}
+                className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-white/5 hover:border-red-500/20 transition"
+                title="Dismiss / Delete Lead"
+              >
+                {deletingId === selectedJob.id ? <Loader2 size={16} className="animate-spin text-red-400" /> : <Trash2 size={16} />}
+              </button>
+
               <button onClick={(e) => saveJob(selectedJob, e)} className="premium-button-primary text-sm flex-1 flex items-center justify-center gap-2">
                 <Save size={16} /> Save to CRM Pipeline
               </button>
