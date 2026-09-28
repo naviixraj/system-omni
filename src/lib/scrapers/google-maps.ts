@@ -62,6 +62,8 @@ async function runOSMQuery(city: string, amenity: string) {
 
       let issueDetected = null;
       if (!websiteUrl) {
+        // Reject 85% of NO_WEBSITE leads to prevent database flooding
+        if (Math.random() < 0.85) continue;
         issueDetected = 'NO_WEBSITE';
       } else {
         if (!websiteUrl.startsWith('http')) websiteUrl = 'http://' + websiteUrl;

@@ -97,6 +97,12 @@ export default function Discovery() {
   });
 
   filteredJobs = filteredJobs.sort((a, b) => {
+    // 1. Force BUGGED websites (SLOW_LOAD, ERROR, NOT_MOBILE_FRIENDLY) to the absolute top of the feed
+    const isBuggedA = (a.issueDetected && a.issueDetected !== 'NO_WEBSITE') ? 1 : 0;
+    const isBuggedB = (b.issueDetected && b.issueDetected !== 'NO_WEBSITE') ? 1 : 0;
+    if (isBuggedA !== isBuggedB) return isBuggedB - isBuggedA;
+
+    // 2. Normal sorting for the rest
     if (sortOrder === "BUDGET_DESC") return parseBudget(b.budget || b.issueDetected) - parseBudget(a.budget || a.issueDetected);
     if (sortOrder === "BUDGET_ASC") return parseBudget(a.budget || a.issueDetected) - parseBudget(b.budget || b.issueDetected);
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
