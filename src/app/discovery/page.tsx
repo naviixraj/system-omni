@@ -520,24 +520,6 @@ export default function Discovery() {
                     : 'Audit Website') 
                   : 'View Original Post'}
               </a>
-              <a
-                href={resolveLeadContact(selectedJob).callUrl}
-                target={resolveLeadContact(selectedJob).phone ? "_self" : "_blank"}
-                rel="noopener noreferrer"
-                className="premium-button text-sm flex items-center justify-center gap-2 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10"
-                title={resolveLeadContact(selectedJob).phone ? `Call ${resolveLeadContact(selectedJob).phone}` : `Look up phone / Call ${selectedJob.title}`}
-              >
-                <Phone size={16} /> Call
-              </a>
-
-              <a
-                href={`mailto:${resolveLeadContact(selectedJob).email}?subject=${encodeURIComponent(`Website Upgrade for ${selectedJob.title}`)}&body=${encodeURIComponent(`Hi ${selectedJob.title} Team,\n\nI reviewed your online presence in ${selectedJob.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
-                className="premium-button text-sm flex items-center justify-center gap-2 text-blue-400 border-blue-500/20 hover:bg-blue-500/10"
-                title={`Send Quick Email to ${resolveLeadContact(selectedJob).email}`}
-              >
-                <Mail size={16} /> Outreach Email
-              </a>
-
               <button 
                 onClick={(e) => deleteJob(selectedJob.id, e)} 
                 disabled={deletingId === selectedJob.id}
