@@ -383,7 +383,7 @@ export default function Discovery() {
                   </span>
                 </div>
 
-                {/* Small Banner Call & Email Buttons */}
+                {/* Small Banner Action Buttons (Call, Email, Delete) */}
                 <div className="flex items-center gap-2">
                   <a
                     href={resolveLeadContact(selectedJob).callUrl}
@@ -402,6 +402,16 @@ export default function Discovery() {
                   >
                     <Mail size={13} /> Email
                   </a>
+
+                  <button 
+                    onClick={(e) => deleteJob(selectedJob.id, e)} 
+                    disabled={deletingId === selectedJob.id}
+                    className="px-2.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold rounded-lg border border-red-500/20 flex items-center gap-1 transition"
+                    title="Dismiss / Delete Lead from database"
+                  >
+                    {deletingId === selectedJob.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
+                    <span className="hidden sm:inline">Delete</span>
+                  </button>
                 </div>
               </div>
 
@@ -520,14 +530,6 @@ export default function Discovery() {
                     : 'Audit Website') 
                   : 'View Original Post'}
               </a>
-              <button 
-                onClick={(e) => deleteJob(selectedJob.id, e)} 
-                disabled={deletingId === selectedJob.id}
-                className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-white/5 hover:border-red-500/20 transition"
-                title="Dismiss / Delete Lead"
-              >
-                {deletingId === selectedJob.id ? <Loader2 size={16} className="animate-spin text-red-400" /> : <Trash2 size={16} />}
-              </button>
 
               <button onClick={(e) => saveJob(selectedJob, e)} className="premium-button-primary text-sm flex-1 flex items-center justify-center gap-2">
                 <Save size={16} /> Save to CRM Pipeline
