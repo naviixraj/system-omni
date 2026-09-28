@@ -32,10 +32,10 @@ export async function POST(req: Request) {
       }
     `;
 
-    // Execute Groq Llama 3.1 70B
+    // Execute Groq Llama 3.1 8B Instant (Current & Lightning Fast)
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.1-70b-versatile',
+      model: 'llama-3.1-8b-instant',
       response_format: { type: 'json_object' },
       temperature: 0.7, 
     });
