@@ -1,3 +1,5 @@
+export const dynamic = 'force-static';
+
 import { NextResponse } from 'next/server';
 import { scrapeMarketplaces } from '@/lib/scrapers/marketplaces';
 import { scrapeGoogleMapsDrip } from '@/lib/scrapers/google-maps';
