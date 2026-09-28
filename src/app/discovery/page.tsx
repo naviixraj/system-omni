@@ -305,7 +305,7 @@ export default function Discovery() {
                       <h4 className="text-sm font-bold text-gray-300 flex items-center gap-2 mb-2">
                         <Target size={16} className="text-blue-400" /> What to Build (Project Scope)
                       </h4>
-                      <p className="text-sm text-gray-400 leading-relaxed">
+                      <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-wrap">
                         {aiAnalysis.requirements}
                       </p>
                     </div>
