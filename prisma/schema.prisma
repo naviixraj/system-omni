@@ -25,6 +25,8 @@ model Lead {
   district        String?  // e.g., "Coimbatore"
   niche           String?  // e.g., "Restaurant"
   contactInfo     String?  // Phone number or email
+  phone           String?  // Direct phone number
+  email           String?  // Direct email address
   rating          Float?   // e.g., 4.5
   websiteUrl      String?  // The business's actual website (if they have one)
   issueDetected   String?  // e.g., "NO_WEBSITE", "SLOW_LOAD", "NOT_MOBILE_FRIENDLY"

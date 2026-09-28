@@ -209,13 +209,29 @@ export default function Pipeline() {
                     </button>
                   </div>
 
-                  <a
-                    href={`mailto:?subject=${encodeURIComponent(`Partnership / Web Proposal: ${job.title}`)}&body=${encodeURIComponent(pitches[job.id])}`}
-                    className="w-full py-1.5 px-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
-                    title="Send this pitch via your email app"
-                  >
-                    <Mail size={13} /> Send Email with Pitch
-                  </a>
+                  {(() => {
+                    let targetEmail = job.email || "";
+                    if (!targetEmail && job.url && job.url.includes('.')) {
+                      try {
+                        const urlObj = new URL(job.url.startsWith('http') ? job.url : 'http://' + job.url);
+                        const host = urlObj.hostname.replace(/^www\./, '');
+                        if (host && host.includes('.')) targetEmail = `contact@${host}`;
+                      } catch (e) {}
+                    }
+                    if (!targetEmail && job.title) {
+                      const slug = job.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
+                      targetEmail = `info@${slug}.com`;
+                    }
+                    return (
+                      <a
+                        href={`mailto:${targetEmail}?subject=${encodeURIComponent(`Partnership / Web Proposal: ${job.title}`)}&body=${encodeURIComponent(pitches[job.id])}`}
+                        className="w-full py-1.5 px-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
+                        title={`Send pitch to ${targetEmail}`}
+                      >
+                        <Mail size={13} /> Send Email ({targetEmail})
+                      </a>
+                    );
+                  })()}
                 </div>
               )}
             </div>

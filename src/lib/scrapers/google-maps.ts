@@ -57,6 +57,9 @@ async function runOSMQuery(city: string, amenity: string) {
       if (!element.tags || !element.tags.name) continue;
       const businessName = element.tags.name;
       let websiteUrl = element.tags.website || element.tags['contact:website'] || null;
+      let phoneNum = element.tags.phone || element.tags['contact:phone'] || element.tags['contact:mobile'] || null;
+      let emailAddr = element.tags.email || element.tags['contact:email'] || null;
+
       const exists = await prisma.lead.findFirst({ where: { title: businessName } });
       if (exists) continue;
 
@@ -73,8 +76,16 @@ async function runOSMQuery(city: string, amenity: string) {
       if (issueDetected) {
         await prisma.lead.create({
           data: {
-            title: businessName, platform: 'OPEN_STREET_MAP', district: city, niche: amenity,
-            url: websiteUrl || '', issueDetected: issueDetected, leadType: 'LOCAL', status: 'SAVED' 
+            title: businessName, 
+            platform: 'OPEN_STREET_MAP', 
+            district: city, 
+            niche: amenity,
+            url: websiteUrl || '', 
+            issueDetected: issueDetected, 
+            phone: phoneNum,
+            email: emailAddr,
+            leadType: 'LOCAL', 
+            status: 'SAVED' 
           }
         });
         console.log(`[CRON] ✅ Saved Lead: ${businessName} [Issue: ${issueDetected}]`);

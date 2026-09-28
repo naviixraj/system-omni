@@ -135,6 +135,30 @@ export default function Discovery() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
+  const resolveLeadContact = (job: any) => {
+    let email = job.email || null;
+    if (!email && job.url && job.url.includes('.')) {
+      try {
+        const urlObj = new URL(job.url.startsWith('http') ? job.url : 'http://' + job.url);
+        const host = urlObj.hostname.replace(/^www\./, '');
+        if (host && host.includes('.')) {
+          email = `contact@${host}`;
+        }
+      } catch (e) {}
+    }
+    if (!email && job.title) {
+      const slug = job.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
+      email = `info@${slug}.com`;
+    }
+
+    const phone = job.phone || null;
+    const callUrl = phone 
+      ? `tel:${phone}` 
+      : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || "") + " phone number")}`;
+
+    return { email, phone, callUrl };
+  };
+
   const uniquePlatforms = Array.from(new Set(jobs.map(j => j.platform)));
 
   return (
@@ -248,83 +272,87 @@ export default function Discovery() {
             </div>
           )}
 
-          {filteredJobs.map((job: any) => (
-            <div 
-              key={job.id} 
-              onClick={() => handleOpenModal(job)}
-              className="premium-panel flex justify-between items-center p-6 group cursor-pointer hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] transition-all duration-300"
-            >
-              <div>
-                <div className="flex items-center gap-3 mb-2.5">
-                  <span className={`premium-badge ${job.leadType === 'LOCAL' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
-                    {job.platform}
-                  </span>
-                  <p className="text-xs text-gray-500 flex items-center gap-1.5 font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
-                    {job.district || "Live Match"}
-                  </p>
-                  
-                  {job.leadType === 'LOCAL' && job.issueDetected && (
-                    <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm border ${
-                      job.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                      job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
-                      job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                      'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                    }`}>
-                      {job.issueDetected.replace(/_/g, ' ')}
+          {filteredJobs.map((job: any) => {
+            const { email, phone, callUrl } = resolveLeadContact(job);
+            return (
+              <div 
+                key={job.id} 
+                onClick={() => handleOpenModal(job)}
+                className="premium-panel flex justify-between items-center p-6 group cursor-pointer hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] transition-all duration-300"
+              >
+                <div>
+                  <div className="flex items-center gap-3 mb-2.5">
+                    <span className={`premium-badge ${job.leadType === 'LOCAL' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
+                      {job.platform}
                     </span>
-                  )}
+                    <p className="text-xs text-gray-500 flex items-center gap-1.5 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                      {job.district || "Live Match"}
+                    </p>
+                    
+                    {job.leadType === 'LOCAL' && job.issueDetected && (
+                      <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm border ${
+                        job.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                        job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                        job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                        'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                      }`}>
+                        {job.issueDetected.replace(/_/g, ' ')}
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-200 group-hover:text-white transition-colors tracking-tight">{job.title}</h4>
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-1 w-[80%]">
+                    {job.leadType === 'LOCAL' ? `System detected website issue: ${job.issueDetected}. High priority outreach target.` : `Client is actively looking for a developer to handle this project. Click view to see full brief.`}
+                  </p>
                 </div>
-                <h4 className="text-lg font-bold text-gray-200 group-hover:text-white transition-colors tracking-tight">{job.title}</h4>
-                <p className="text-sm text-gray-500 mt-1 line-clamp-1 w-[80%]">
-                  {job.leadType === 'LOCAL' ? `System detected website issue: ${job.issueDetected}. High priority outreach target.` : `Client is actively looking for a developer to handle this project. Click view to see full brief.`}
-                </p>
-              </div>
-              
-              <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                <p className="font-semibold text-gray-100 text-lg">
-                  {job.leadType === 'LOCAL' ? <span className="text-orange-400/90 text-sm">High Target</span> : job.budget}
-                </p>
-                <div className="flex items-center gap-2">
-                  {/* Quick Contact buttons if phone/website available */}
-                  {job.phone && (
+                
+                <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                  <p className="font-semibold text-gray-100 text-lg">
+                    {job.leadType === 'LOCAL' ? <span className="text-orange-400/90 text-sm">High Target</span> : job.budget}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {/* Call Option Button (Direct tel: or Google Call lookup) */}
                     <a
-                      href={`tel:${job.phone}`}
+                      href={callUrl}
+                      target={phone ? "_self" : "_blank"}
+                      rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
                       className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/20 transition"
-                      title={`Call ${job.phone}`}
+                      title={phone ? `Call ${phone}` : `Find Phone / Call ${job.title}`}
                     >
                       <Phone size={14} />
                     </a>
-                  )}
-                  {/* Quick Mail outreach */}
-                  <a
-                    href={`mailto:?subject=${encodeURIComponent(`Website Upgrade for ${job.title}`)}&body=${encodeURIComponent(`Hi ${job.title} Team,\n\nI reviewed your online presence in ${job.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/20 transition"
-                    title="Draft Quick Outreach Email"
-                  >
-                    <Mail size={14} />
-                  </a>
 
-                  {/* Move to Pipeline Button */}
-                  <button onClick={(e) => saveJob(job, e)} className="premium-button-primary text-xs flex items-center gap-2 px-3 py-1.5">
-                    <Save size={13} /> Pipeline
-                  </button>
+                    {/* Quick Mail outreach */}
+                    <a
+                      href={`mailto:${email}?subject=${encodeURIComponent(`Website Upgrade for ${job.title}`)}&body=${encodeURIComponent(`Hi ${job.title} Team,\n\nI reviewed your online presence in ${job.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/20 transition"
+                      title={`Send Email to ${email}`}
+                    >
+                      <Mail size={14} />
+                    </a>
 
-                  {/* Dismiss / Delete Lead Button */}
-                  <button 
-                    onClick={(e) => deleteJob(job.id, e)} 
-                    disabled={deletingId === job.id}
-                    className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-transparent hover:border-red-500/20 transition"
-                    title="Dismiss / Delete Lead"
-                  >
-                    {deletingId === job.id ? <Loader2 size={14} className="animate-spin text-red-400" /> : <Trash2 size={14} />}
-                  </button>
+                    {/* Move to Pipeline Button */}
+                    <button onClick={(e) => saveJob(job, e)} className="premium-button-primary text-xs flex items-center gap-2 px-3 py-1.5">
+                      <Save size={13} /> Pipeline
+                    </button>
+
+                    {/* Dismiss / Delete Lead Button */}
+                    <button 
+                      onClick={(e) => deleteJob(job.id, e)} 
+                      disabled={deletingId === job.id}
+                      className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-transparent hover:border-red-500/20 transition"
+                      title="Dismiss / Delete Lead"
+                    >
+                      {deletingId === job.id ? <Loader2 size={14} className="animate-spin text-red-400" /> : <Trash2 size={14} />}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -469,9 +497,19 @@ export default function Discovery() {
                   : 'View Original Post'}
               </a>
               <a
-                href={`mailto:?subject=${encodeURIComponent(`Website Upgrade for ${selectedJob.title}`)}&body=${encodeURIComponent(`Hi ${selectedJob.title} Team,\n\nI reviewed your online presence in ${selectedJob.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
+                href={resolveLeadContact(selectedJob).callUrl}
+                target={resolveLeadContact(selectedJob).phone ? "_self" : "_blank"}
+                rel="noopener noreferrer"
+                className="premium-button text-sm flex items-center justify-center gap-2 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/10"
+                title={resolveLeadContact(selectedJob).phone ? `Call ${resolveLeadContact(selectedJob).phone}` : `Look up phone / Call ${selectedJob.title}`}
+              >
+                <Phone size={16} /> Call
+              </a>
+
+              <a
+                href={`mailto:${resolveLeadContact(selectedJob).email}?subject=${encodeURIComponent(`Website Upgrade for ${selectedJob.title}`)}&body=${encodeURIComponent(`Hi ${selectedJob.title} Team,\n\nI reviewed your online presence in ${selectedJob.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
                 className="premium-button text-sm flex items-center justify-center gap-2 text-blue-400 border-blue-500/20 hover:bg-blue-500/10"
-                title="Send Quick Email"
+                title={`Send Quick Email to ${resolveLeadContact(selectedJob).email}`}
               >
                 <Mail size={16} /> Outreach Email
               </a>
