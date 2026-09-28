@@ -133,8 +133,8 @@ export default function Discovery() {
       </div>
 
       {/* FILTER CONTROLS BAR */}
-      <div className="premium-panel p-2 mb-8 flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="premium-panel p-2 mb-8 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 overflow-x-auto custom-scrollbar">
+        <div className="flex gap-2 flex-shrink-0 w-full xl:w-auto">
           {["ALL", "GLOBAL", "LOCAL"].map((tab) => (
             <button
               key={tab}
@@ -150,7 +150,7 @@ export default function Discovery() {
           ))}
         </div>
 
-        <div className="flex items-center gap-4 px-3">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-4 px-3 w-full xl:w-auto pb-2 xl:pb-0">
           <div className="flex items-center gap-2">
             <Filter size={14} className="text-gray-500" />
             <select 
