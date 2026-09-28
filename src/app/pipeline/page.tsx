@@ -172,9 +172,9 @@ export default function Pipeline() {
                 </button>
               ) : (
                 <div className="mt-1 relative group/pitch">
-                  <p className="text-[11px] text-gray-400 bg-[#121212] p-3 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed">
+                  <div className="text-[11px] text-gray-400 bg-[#121212] p-3 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto custom-scrollbar">
                     {pitches[job.id]}
-                  </p>
+                  </div>
                   <button 
                     onClick={() => copyToClipboard(job.id, pitches[job.id])}
                     className="absolute top-1.5 right-1.5 p-1.5 bg-[#222] hover:bg-[#333] rounded-md transition text-gray-400 hover:text-white border border-white/5"

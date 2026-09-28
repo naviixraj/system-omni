@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Globe2, Target, TrendingUp, ArrowRight, Clock } from "lucide-react";
+import { Activity, Globe2, Target, TrendingUp, ArrowRight, Clock, Database } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
