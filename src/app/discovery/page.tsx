@@ -19,7 +19,16 @@ export default function Discovery() {
     fetch("/api/live-jobs")
       .then((res) => res.json())
       .then((data) => {
-        setJobs(data);
+        if (Array.isArray(data)) {
+          setJobs(data);
+        } else {
+          setJobs([]);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load discovery jobs:", err);
+        setJobs([]);
         setLoading(false);
       });
   };
@@ -108,7 +117,7 @@ export default function Discovery() {
     setIsAnalyzing(false);
   };
 
-  let filteredJobs = jobs.filter((job) => {
+  let filteredJobs = (Array.isArray(jobs) ? jobs : []).filter((job) => {
     if (activeTab !== "ALL" && job.leadType !== activeTab) return false;
     if (selectedPlatform !== "ALL" && job.platform !== selectedPlatform) return false;
     if (issueFilter !== "ALL" && job.issueDetected !== issueFilter) return false;

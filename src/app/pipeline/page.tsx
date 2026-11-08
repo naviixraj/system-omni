@@ -13,7 +13,17 @@ export default function Pipeline() {
   useEffect(() => {
     fetch("/api/saved-jobs")
       .then((res) => res.json())
-      .then((data) => setJobs(data));
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setJobs(data);
+        } else {
+          setJobs([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load saved jobs:", err);
+        setJobs([]);
+      });
   }, []);
 
   const handleUnsave = async (jobId: string) => {
@@ -95,7 +105,7 @@ export default function Pipeline() {
   };
 
   const renderColumn = (title: string, statusKey: string, dotColor: string, emptyText: string) => {
-    const columnJobs = jobs.filter((job) => job.status === statusKey);
+    const columnJobs = Array.isArray(jobs) ? jobs.filter((job) => job.status === statusKey) : [];
 
     return (
       <div 

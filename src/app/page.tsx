@@ -17,11 +17,13 @@ export default function Dashboard() {
     fetch("/api/saved-jobs")
       .then((res) => res.json())
       .then((data) => {
-        setStats({
-          active: data.length,
-          discovered: 0, 
-          pitched: data.filter((j: any) => j.status === 'PITCHED' || j.status === 'WON').length,
-        });
+        if (Array.isArray(data)) {
+          setStats((prev) => ({
+            ...prev,
+            active: data.length,
+            pitched: data.filter((j: any) => j.status === 'PITCHED' || j.status === 'WON').length,
+          }));
+        }
       })
       .catch(() => {});
 
@@ -29,8 +31,10 @@ export default function Dashboard() {
     fetch("/api/live-jobs")
       .then((res) => res.json())
       .then((data) => {
-        setStats((prev) => ({ ...prev, discovered: data.length }));
-        setRecentProjects(data.slice(0, 4)); // Get the 4 absolute newest projects
+        if (Array.isArray(data)) {
+          setStats((prev) => ({ ...prev, discovered: data.length }));
+          setRecentProjects(data.slice(0, 4)); // Get the 4 absolute newest projects
+        }
       })
       .catch(() => {});
   }, []);
