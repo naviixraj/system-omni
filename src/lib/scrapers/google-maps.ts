@@ -63,8 +63,8 @@ async function runOSMQuery(city: string, amenity: string) {
 
       let issueDetected: string | null = null;
       if (!websiteUrl) {
-        // Prioritize finding real businesses with actual website issues
-        if (Math.random() < 0.70) continue;
+        // Reject 95% of businesses without websites so the feed is heavily populated with actual website audits
+        if (Math.random() < 0.95) continue;
         issueDetected = 'NO_WEBSITE';
       } else {
         if (!websiteUrl.startsWith('http')) websiteUrl = 'http://' + websiteUrl;
