@@ -45,7 +45,7 @@ export default function Sidebar() {
 
       {/* SIDEBAR CONTAINER (DESKTOP & MOBILE DRAWER) */}
       <aside className={`
-        fixed md:sticky top-0 left-0 h-screen w-60 bg-[#080808] border-r border-white/[0.08] p-4 flex flex-col z-50 transition-transform duration-200 ease-out
+        fixed md:static top-0 left-0 h-screen w-60 flex-shrink-0 bg-[#080808] border-r border-white/[0.08] p-4 flex flex-col z-50 select-none transition-transform duration-200 ease-out
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <div className="flex items-center justify-between mb-8 px-2 pt-2 md:pt-1">
