@@ -109,31 +109,42 @@ export default function Pipeline() {
 
     return (
       <div 
-        className="w-full md:w-[360px] flex-shrink-0 flex flex-col"
+        className="w-full md:w-[350px] flex-shrink-0 flex flex-col"
         onDragOver={onDragOver}
         onDrop={(e) => onDrop(e, statusKey)}
       >
-        <div className="flex justify-between items-center mb-4 px-1">
-          <h3 className="font-semibold text-gray-400 tracking-wider text-[11px] uppercase flex items-center gap-2">
+        <div className="flex justify-between items-center mb-3 px-2 py-1.5 rounded-md bg-[#0d0d0d] border border-white/[0.08]">
+          <div className="flex items-center gap-2">
             <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`}></span>
-            {title}
-          </h3>
-          <span className="bg-[#121212] border border-white/5 text-gray-400 text-xs px-2 py-0.5 rounded-md font-medium">{columnJobs.length}</span>
+            <h3 className="text-xs font-semibold text-neutral-200 tracking-wider uppercase">{title}</h3>
+          </div>
+          <span className="text-[10px] font-mono font-medium text-neutral-400 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.06]">{columnJobs.length}</span>
         </div>
 
-        <div className={`flex-1 premium-panel p-3 overflow-y-auto space-y-3 ${columnJobs.length === 0 ? 'bg-transparent border-dashed' : ''}`}>
+        <div className={`flex-1 p-2 rounded-lg bg-[#0a0a0a] border border-white/[0.06] overflow-y-auto space-y-2.5 min-h-[500px] ${columnJobs.length === 0 ? 'border-dashed' : ''}`}>
+          {columnJobs.length === 0 && (
+            <div className="h-32 flex items-center justify-center text-[11px] text-neutral-500">
+              {emptyText}
+            </div>
+          )}
+
           {columnJobs.map((job: any) => (
             <div 
               key={job.id} 
               draggable
               onDragStart={(e) => onDragStart(e, job.id)}
-              className="bg-[#1a1a1a] border border-white/[0.04] p-4 rounded-xl cursor-grab active:cursor-grabbing hover:border-white/10 transition group flex flex-col shadow-sm"
+              className="bg-[#121212] border border-white/[0.08] hover:border-white/20 p-3.5 rounded-lg cursor-grab active:cursor-grabbing transition-colors flex flex-col gap-2.5 shadow-none"
             >
-              <div className="flex justify-between items-start mb-3">
-                <span className="premium-badge bg-blue-500/10 text-blue-400 border-blue-500/20">
+              <div className="flex justify-between items-start">
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                  job.leadType === 'LOCAL' 
+                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+                    : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                }`}>
                   {job.platform}
                 </span>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-1.5">
                   {(job.url || job.leadType === 'LOCAL') && (
                     <a 
                       href={
@@ -143,23 +154,23 @@ export default function Pipeline() {
                       } 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-gray-500 hover:text-gray-300 transition"
+                      className="p-1 text-neutral-400 hover:text-white hover:bg-white/[0.06] rounded transition-colors"
                       title={
                         job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE'
                           ? 'Go to Website'
                           : 'Search Business on Google'
                       }
                     >
-                      <ExternalLink size={14} />
+                      <Globe2 size={13} />
                     </a>
                   )}
                   <button
                     onClick={() => handleUnsave(job.id)}
                     disabled={deletingId === job.id}
-                    className="text-gray-500 hover:text-blue-400 transition"
+                    className="p-1 text-neutral-400 hover:text-blue-400 hover:bg-white/[0.06] rounded transition-colors"
                     title="Return to Discovery Feed"
                   >
-                    {deletingId === job.id ? <Loader2 size={14} className="animate-spin text-blue-400" /> : <RotateCcw size={14} />}
+                    {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-blue-400" /> : <RotateCcw size={13} />}
                   </button>
 
                   <button

@@ -171,98 +171,91 @@ export default function Discovery() {
   const uniquePlatforms = Array.from(new Set(jobs.map(j => j.platform)));
 
   return (
-    <div className="max-w-6xl mx-auto pb-10 relative">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 md:mb-8">
+    <div className="max-w-[1400px] mx-auto space-y-6">
+      {/* HEADER & SEARCH */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/[0.08]">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1 md:mb-2 flex items-center gap-3">
-            <Globe2 className="text-blue-500" size={26} />
-            Global Discovery
-          </h1>
-          <p className="text-gray-400 text-xs md:text-sm">Live structured feed. Refreshed every 60 seconds.</p>
+          <div className="flex items-center gap-2 text-xs text-neutral-500 mb-1">
+            <span>Workspace</span>
+            <span>/</span>
+            <span className="text-neutral-300">Discovery</span>
+          </div>
+          <h1 className="text-xl font-semibold text-white tracking-tight">Leads & Global Opportunities</h1>
         </div>
-        <div className="flex gap-4 w-full sm:w-auto">
-          <div className="premium-panel flex items-center px-4 py-2 gap-2 focus-within:border-blue-500/40 focus-within:ring-1 focus-within:ring-blue-500/20 transition-all w-full sm:w-auto">
-            <Search size={16} className="text-gray-400 shrink-0" />
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center px-3 py-1.5 gap-2 rounded-md bg-[#121212] border border-white/[0.08] focus-within:border-white/20 transition-all w-full sm:w-72">
+            <Search size={14} className="text-neutral-500 shrink-0" />
             <input 
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by city, name, role..." 
-              className="bg-transparent border-none outline-none text-sm text-gray-200 placeholder-gray-500 w-full sm:w-52 md:w-64"
+              placeholder="Filter leads..." 
+              className="bg-transparent border-none outline-none text-xs text-neutral-200 placeholder-neutral-500 w-full"
             />
             {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery("")} 
-                className="text-gray-400 hover:text-white transition p-0.5"
-                title="Clear search"
-              >
-                <X size={14} />
+              <button onClick={() => setSearchQuery("")} className="text-neutral-500 hover:text-white">
+                <X size={13} />
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* FILTER CONTROLS BAR */}
-      <div className="premium-panel p-2 mb-8 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 overflow-x-auto custom-scrollbar">
-        <div className="flex gap-2 flex-shrink-0 w-full xl:w-auto">
-          {["ALL", "GLOBAL", "LOCAL"].map((tab) => (
+      {/* SEGMENTED FILTER ROW (LINEAR STYLE) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-1.5 rounded-lg bg-[#0d0d0d] border border-white/[0.08]">
+        <div className="flex items-center gap-1">
+          {[
+            { id: "ALL", label: "All Leads", count: jobs.length },
+            { id: "GLOBAL", label: "Freelance Projects", count: jobs.filter(j => j.leadType === "GLOBAL").length },
+            { id: "LOCAL", label: "Local Businesses", count: jobs.filter(j => j.leadType === "LOCAL").length }
+          ].map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab 
-                ? "bg-white/10 text-white border border-white/10" 
-                : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.02] border border-transparent"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-2 ${
+                activeTab === tab.id 
+                  ? "bg-white/[0.1] text-white border border-white/[0.1]" 
+                  : "text-neutral-400 hover:text-neutral-200 border border-transparent"
               }`}
             >
-              {tab === "ALL" ? "All Leads" : tab === "GLOBAL" ? "Freelance Projects" : "Local Businesses"}
+              <span>{tab.label}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded ${activeTab === tab.id ? "bg-white/[0.1] text-neutral-300" : "bg-white/[0.04] text-neutral-500"}`}>
+                {tab.count}
+              </span>
             </button>
           ))}
         </div>
 
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-4 px-3 w-full xl:w-auto pb-2 xl:pb-0">
-          <div className="flex items-center gap-2">
-            <Filter size={14} className="text-gray-500" />
+        <div className="flex items-center gap-2 px-2">
+          {/* Issue Filter */}
+          <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+            <Filter size={13} className="text-neutral-500" />
             <select 
-              className="bg-transparent text-sm text-gray-300 font-medium outline-none cursor-pointer hover:text-white transition"
-              value={selectedPlatform}
-              onChange={(e) => setSelectedPlatform(e.target.value)}
-            >
-              <option value="ALL" className="bg-[#121212]">All Platforms</option>
-              {uniquePlatforms.map(p => (
-                <option key={p as string} value={p as string} className="bg-[#121212]">{p as string}</option>
-              ))}
-            </select>
-          </div>
-          <div className="w-px h-5 bg-white/10 mx-2"></div>
-          
-          <div className="flex items-center gap-2">
-            <Filter size={14} className="text-gray-500" />
-            <select 
-              className="bg-transparent text-sm text-gray-300 font-medium outline-none cursor-pointer hover:text-white transition"
+              className="bg-transparent text-xs text-neutral-300 font-medium outline-none cursor-pointer hover:text-white"
               value={issueFilter}
               onChange={(e) => setIssueFilter(e.target.value)}
             >
               <option value="ALL" className="bg-[#121212]">All Issues</option>
-              <option value="NO_WEBSITE" className="bg-[#121212]">No Website</option>
+              <option value="ERROR" className="bg-[#121212]">Broken/Error</option>
               <option value="SLOW_LOAD" className="bg-[#121212]">Slow Load</option>
               <option value="NOT_MOBILE_FRIENDLY" className="bg-[#121212]">Not Mobile Friendly</option>
-              <option value="ERROR" className="bg-[#121212]">Broken/Error</option>
+              <option value="NO_WEBSITE" className="bg-[#121212]">No Website</option>
             </select>
           </div>
-          <div className="w-px h-5 bg-white/10 mx-2"></div>
 
-          <div className="flex items-center gap-2">
-            <ArrowUpDown size={14} className="text-gray-500" />
+          <div className="w-px h-4 bg-white/[0.08]"></div>
+
+          {/* Sort Filter */}
+          <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+            <ArrowUpDown size={13} className="text-neutral-500" />
             <select 
-              className="bg-transparent text-sm text-gray-300 font-medium outline-none cursor-pointer hover:text-white transition"
+              className="bg-transparent text-xs text-neutral-300 font-medium outline-none cursor-pointer hover:text-white"
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
             >
-              <option value="NEWEST" className="bg-[#121212]">Sort: Newest First</option>
-              <option value="BUDGET_DESC" className="bg-[#121212]">Sort: Budget (High to Low)</option>
-              <option value="BUDGET_ASC" className="bg-[#121212]">Sort: Budget (Low to High)</option>
+              <option value="NEWEST" className="bg-[#121212]">Newest</option>
+              <option value="BUDGET_DESC" className="bg-[#121212]">Budget: High to Low</option>
+              <option value="BUDGET_ASC" className="bg-[#121212]">Budget: Low to High</option>
             </select>
           </div>
         </div>
@@ -281,105 +274,121 @@ export default function Discovery() {
             </div>
           )}
 
-          {filteredJobs.map((job: any) => {
-            const { email, phone, callUrl } = resolveLeadContact(job);
-            return (
-              <div 
-                key={job.id} 
-                onClick={() => handleOpenModal(job)}
-                className="premium-panel flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-6 gap-4 group cursor-pointer hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] transition-all duration-300"
-              >
-                <div className="w-full sm:w-auto">
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                    <span className={`premium-badge ${job.leadType === 'LOCAL' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
-                      {job.platform}
-                    </span>
-                    <p className="text-xs text-gray-500 flex items-center gap-1.5 font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
-                      {job.district || "Live Match"}
-                    </p>
-                    
-                    {job.leadType === 'LOCAL' && job.issueDetected && (
-                      <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm border ${
-                        job.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                        job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
-                        job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                        'bg-blue-500/10 text-blue-400 border-blue-500/20'
+          <div className="premium-panel divide-y divide-white/[0.06] overflow-hidden">
+            {filteredJobs.map((job: any) => {
+              const { email, phone, callUrl } = resolveLeadContact(job);
+              return (
+                <div 
+                  key={job.id} 
+                  onClick={() => handleOpenModal(job)}
+                  className="p-3.5 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3.5 hover:bg-white/[0.02] cursor-pointer transition-colors group"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                        job.leadType === 'LOCAL' 
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+                          : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                       }`}>
-                        {job.issueDetected.replace(/_/g, ' ')}
+                        {job.platform}
                       </span>
-                    )}
+
+                      {job.leadType === 'LOCAL' && job.issueDetected && (
+                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border flex items-center gap-1.5 ${
+                          job.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                          job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                          job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                          'bg-neutral-800 text-neutral-400 border-neutral-700'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            job.issueDetected === 'ERROR' ? 'bg-red-400' :
+                            job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-400' :
+                            job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-400' :
+                            'bg-neutral-400'
+                          }`}></span>
+                          {job.issueDetected.replace(/_/g, ' ')}
+                        </span>
+                      )}
+
+                      <span className="text-[11px] text-neutral-500">
+                        {job.district || "Live Match"}
+                      </span>
+                    </div>
+
+                    <h3 className="text-sm font-medium text-neutral-100 group-hover:text-white transition-colors truncate">
+                      {job.title}
+                    </h3>
                   </div>
-                  <h4 className="text-base sm:text-lg font-bold text-gray-200 group-hover:text-white transition-colors tracking-tight">{job.title}</h4>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-2 sm:line-clamp-1 w-full sm:w-[80%]">
-                    {job.leadType === 'LOCAL' ? `System detected website issue: ${job.issueDetected}. High priority outreach target.` : `Client is actively looking for a developer to handle this project. Click view to see full brief.`}
-                  </p>
-                </div>
-                
-                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 w-full sm:w-auto flex-shrink-0 pt-3 sm:pt-0 border-t border-white/[0.04] sm:border-none">
-                  <p className="font-semibold text-gray-100 text-base sm:text-lg">
-                    {job.leadType === 'LOCAL' ? <span className="text-orange-400/90 text-xs sm:text-sm">High Target</span> : job.budget}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    {/* Go to Website Globe Button */}
-                    {(job.url || job.leadType === 'LOCAL') && (
+                  
+                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t border-white/[0.04] sm:border-none">
+                    <span className="text-xs font-mono font-medium text-neutral-300">
+                      {job.leadType === 'LOCAL' ? 'High Target' : job.budget}
+                    </span>
+
+                    <div className="flex items-center gap-1.5">
+                      {/* Go to Website Globe Button */}
+                      {(job.url || job.leadType === 'LOCAL') && (
+                        <a
+                          href={
+                            job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE'
+                              ? job.url
+                              : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 text-neutral-400 hover:text-white hover:bg-white/[0.06] rounded border border-white/[0.06] transition-colors"
+                          title={job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE' ? `Visit ${job.url}` : `Search ${job.title} on Google`}
+                        >
+                          <Globe2 size={13} />
+                        </a>
+                      )}
+
+                      {/* Call Option Button */}
                       <a
-                        href={
-                          job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE'
-                            ? job.url
-                            : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`
-                        }
-                        target="_blank"
+                        href={callUrl}
+                        target={phone ? "_self" : "_blank"}
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/20 transition"
-                        title={job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE' ? `Visit ${job.url}` : `Search ${job.title} on Google`}
+                        className="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded border border-emerald-500/20 transition-colors"
+                        title={phone ? `Call ${phone}` : `Find Phone / Call ${job.title}`}
                       >
-                        <Globe2 size={14} />
+                        <Phone size={13} />
                       </a>
-                    )}
 
-                    {/* Call Option Button (Direct tel: or Google Call lookup) */}
-                    <a
-                      href={callUrl}
-                      target={phone ? "_self" : "_blank"}
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/20 transition"
-                      title={phone ? `Call ${phone}` : `Find Phone / Call ${job.title}`}
-                    >
-                      <Phone size={14} />
-                    </a>
+                      {/* Quick Mail outreach */}
+                      <a
+                        href={`mailto:${email}?subject=${encodeURIComponent(`Website Upgrade for ${job.title}`)}&body=${encodeURIComponent(`Hi ${job.title} Team,\n\nI reviewed your online presence in ${job.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded border border-blue-500/20 transition-colors"
+                        title={`Send Email to ${email}`}
+                      >
+                        <Mail size={13} />
+                      </a>
 
-                    {/* Quick Mail outreach */}
-                    <a
-                      href={`mailto:${email}?subject=${encodeURIComponent(`Website Upgrade for ${job.title}`)}&body=${encodeURIComponent(`Hi ${job.title} Team,\n\nI reviewed your online presence in ${job.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg border border-purple-500/20 transition"
-                      title={`Send Email to ${email}`}
-                    >
-                      <Mail size={14} />
-                    </a>
+                      {/* Move to Pipeline Button */}
+                      <button 
+                        onClick={(e) => saveJob(job, e)} 
+                        className="px-2.5 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 rounded border border-blue-500/30 flex items-center gap-1.5 transition-colors"
+                      >
+                        <Save size={12} /> Pipeline
+                      </button>
 
-                    {/* Move to Pipeline Button */}
-                    <button onClick={(e) => saveJob(job, e)} className="premium-button-primary text-xs flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5">
-                      <Save size={13} /> Pipeline
-                    </button>
-
-                    {/* Dismiss / Delete Lead Button */}
-                    <button 
-                      onClick={(e) => deleteJob(job.id, e)} 
-                      disabled={deletingId === job.id}
-                      className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-transparent hover:border-red-500/20 transition"
-                      title="Dismiss / Delete Lead"
-                    >
-                      {deletingId === job.id ? <Loader2 size={14} className="animate-spin text-red-400" /> : <Trash2 size={14} />}
-                    </button>
+                      {/* Dismiss / Delete Lead Button */}
+                      <button 
+                        onClick={(e) => deleteJob(job.id, e)} 
+                        disabled={deletingId === job.id}
+                        className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                        title="Dismiss / Delete Lead"
+                      >
+                        {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
