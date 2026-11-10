@@ -16,7 +16,7 @@ export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getA
 
 // Safe Analytics Initialization
 if (typeof window !== "undefined") {
-  isSupported().then((supported) => {
+  isSupported().then((supported: boolean) => {
     if (supported) {
       getAnalytics(app);
     }
