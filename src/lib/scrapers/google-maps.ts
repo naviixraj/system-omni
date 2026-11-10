@@ -22,8 +22,8 @@ async function auditWebsite(url: string): Promise<string | null> {
     // Lowered threshold to 1.5 seconds to aggressively catch unoptimized websites
     if (loadTime > 1500) return 'SLOW_LOAD';
 
-    const html = await response.text();
-    const hasViewport = html.toLowerCase().includes('meta name="viewport"');
+    const html = await response.text().then(t => t.toLowerCase());
+    const hasViewport = html.includes('name="viewport"') || html.includes("name='viewport'") || (html.includes('viewport') && html.includes('width=device-width'));
     if (!hasViewport) return 'NOT_MOBILE_FRIENDLY';
 
     return null; 
@@ -33,40 +33,38 @@ async function auditWebsite(url: string): Promise<string | null> {
 }
 
 // ==========================================
-// MASSIVE BULK OPEN-SOURCE SCRAPER
+// MASSIVE BULK OPEN-SOURCE SCRAPER (Nominatim API)
 // ==========================================
 async function runOSMQuery(city: string, amenity: string) {
   console.log(`[CRON] Scraping REAL ${amenity}s in ${city} via OSM...`);
-  const overpassQuery = `
-    [out:json][timeout:60];
-    area["name"="${city}"]->.searchArea;
-    node["amenity"="${amenity}"](area.searchArea);
-    out 100;
-  `;
   try {
-    const response = await fetch('https://lz4.overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'FreelanceCRM/1.0' },
-      body: `data=${encodeURIComponent(overpassQuery)}`
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(`${amenity} in ${city}`)}&addressdetails=1&extratags=1&limit=25`;
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'OmniSystemCRM/1.0 (contact@omnisystem.local)',
+        'Accept': 'application/json'
+      }
     });
+
     if (!response.ok) return;
     const data = await response.json();
-    if (!data.elements || data.elements.length === 0) return;
+    if (!Array.isArray(data) || data.length === 0) return;
 
-    for (const element of data.elements) {
-      if (!element.tags || !element.tags.name) continue;
-      const businessName = element.tags.name;
-      let websiteUrl = element.tags.website || element.tags['contact:website'] || null;
-      let phoneNum = element.tags.phone || element.tags['contact:phone'] || element.tags['contact:mobile'] || null;
-      let emailAddr = element.tags.email || element.tags['contact:email'] || null;
+    for (const item of data) {
+      const businessName = item.name || item.display_name?.split(',')[0]?.trim();
+      if (!businessName || businessName.length < 3) continue;
+
+      let websiteUrl = item.extratags?.website || item.extratags?.['contact:website'] || null;
+      let phoneNum = item.extratags?.phone || item.extratags?.['contact:phone'] || item.extratags?.['contact:mobile'] || null;
+      let emailAddr = item.extratags?.email || item.extratags?.['contact:email'] || null;
 
       const exists = await prisma.lead.findFirst({ where: { title: businessName } });
       if (exists) continue;
 
-      let issueDetected = null;
+      let issueDetected: string | null = null;
       if (!websiteUrl) {
-        // Reject 85% of NO_WEBSITE leads to prevent database flooding
-        if (Math.random() < 0.85) continue;
+        // Prioritize finding real businesses with actual website issues
+        if (Math.random() < 0.70) continue;
         issueDetected = 'NO_WEBSITE';
       } else {
         if (!websiteUrl.startsWith('http')) websiteUrl = 'http://' + websiteUrl;
