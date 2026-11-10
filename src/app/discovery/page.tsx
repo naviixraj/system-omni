@@ -321,6 +321,24 @@ export default function Discovery() {
                     {job.leadType === 'LOCAL' ? <span className="text-orange-400/90 text-xs sm:text-sm">High Target</span> : job.budget}
                   </p>
                   <div className="flex items-center gap-2">
+                    {/* Go to Website Globe Button */}
+                    {(job.url || job.leadType === 'LOCAL') && (
+                      <a
+                        href={
+                          job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE'
+                            ? job.url
+                            : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/20 transition"
+                        title={job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE' ? `Visit ${job.url}` : `Search ${job.title} on Google`}
+                      >
+                        <Globe2 size={14} />
+                      </a>
+                    )}
+
                     {/* Call Option Button (Direct tel: or Google Call lookup) */}
                     <a
                       href={callUrl}
@@ -337,7 +355,7 @@ export default function Discovery() {
                     <a
                       href={`mailto:${email}?subject=${encodeURIComponent(`Website Upgrade for ${job.title}`)}&body=${encodeURIComponent(`Hi ${job.title} Team,\n\nI reviewed your online presence in ${job.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
                       onClick={(e) => e.stopPropagation()}
-                      className="p-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/20 transition"
+                      className="p-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg border border-purple-500/20 transition"
                       title={`Send Email to ${email}`}
                     >
                       <Mail size={14} />
@@ -425,8 +443,18 @@ export default function Discovery() {
 
               <div className="flex items-center gap-3 pr-10">
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">{selectedJob.title}</h2>
-                {selectedJob.url && selectedJob.url !== '' && selectedJob.issueDetected !== 'NO_WEBSITE' && (
-                  <a href={selectedJob.url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400 transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10" title="Visit Official Website">
+                {(selectedJob.url || selectedJob.leadType === 'LOCAL') && (
+                  <a 
+                    href={
+                      selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE'
+                        ? selectedJob.url
+                        : `https://www.google.com/search?q=${encodeURIComponent(selectedJob.title + " " + (selectedJob.district || ""))}`
+                    } 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-gray-400 hover:text-blue-400 transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10" 
+                    title={selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE' ? `Visit ${selectedJob.url}` : `Search ${selectedJob.title} on Google`}
+                  >
                     <Globe2 size={20} />
                   </a>
                 )}
@@ -519,24 +547,17 @@ export default function Discovery() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2 pt-4 sm:pt-6 border-t border-white/[0.04] justify-between items-stretch sm:items-center">
               <a 
                 href={
-                  selectedJob.leadType === 'LOCAL' 
-                    ? selectedJob.issueDetected === 'NO_WEBSITE' ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.title + " " + (selectedJob.district || ""))}`
-                    : selectedJob.issueDetected === 'ERROR' ? `https://web.archive.org/web/*/${selectedJob.url}`
-                    : selectedJob.issueDetected === 'SLOW_LOAD' ? `https://pagespeed.web.dev/analysis?url=${selectedJob.url}`
-                    : selectedJob.issueDetected === 'NOT_MOBILE_FRIENDLY' ? `https://pagespeed.web.dev/analysis?url=${selectedJob.url}`
-                    : selectedJob.url
-                    : selectedJob.url
+                  selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE'
+                    ? selectedJob.url
+                    : `https://www.google.com/search?q=${encodeURIComponent(selectedJob.title + " " + (selectedJob.district || ""))}`
                 } 
                 target="_blank" 
+                rel="noopener noreferrer"
                 className="premium-button text-sm flex-1 text-center"
               >
-                {selectedJob.leadType === 'LOCAL' 
-                  ? (selectedJob.issueDetected === 'NO_WEBSITE' ? 'Open in Google Maps' 
-                    : selectedJob.issueDetected === 'ERROR' ? 'View Cached Archive' 
-                    : selectedJob.issueDetected === 'SLOW_LOAD' ? 'Run PageSpeed Audit'
-                    : selectedJob.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'Run Mobile UX Audit'
-                    : 'Audit Website') 
-                  : 'View Original Post'}
+                {selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE'
+                  ? 'Go to Website'
+                  : 'Search Business on Google'}
               </a>
 
               <button onClick={(e) => saveJob(selectedJob, e)} className="premium-button-primary text-sm flex-1 flex items-center justify-center gap-2">

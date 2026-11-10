@@ -137,24 +137,17 @@ export default function Pipeline() {
                   {(job.url || job.leadType === 'LOCAL') && (
                     <a 
                       href={
-                        job.leadType === 'LOCAL' 
-                          ? job.issueDetected === 'NO_WEBSITE' ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.title + " " + (job.district || ""))}`
-                          : job.issueDetected === 'ERROR' ? `https://web.archive.org/web/*/${job.url}`
-                          : job.issueDetected === 'SLOW_LOAD' ? `https://pagespeed.web.dev/analysis?url=${job.url}`
-                          : job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? `https://pagespeed.web.dev/analysis?url=${job.url}`
-                          : job.url
-                          : job.url
+                        job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE'
+                          ? job.url
+                          : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`
                       } 
                       target="_blank" 
+                      rel="noopener noreferrer"
                       className="text-gray-500 hover:text-gray-300 transition"
                       title={
-                        job.leadType === 'LOCAL' 
-                          ? (job.issueDetected === 'NO_WEBSITE' ? 'Open in Google Maps' 
-                            : job.issueDetected === 'ERROR' ? 'View Cached Archive' 
-                            : job.issueDetected === 'SLOW_LOAD' ? 'Run PageSpeed Audit'
-                            : job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'Run Mobile UX Audit'
-                            : 'Audit Website') 
-                          : 'View Post'
+                        job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE'
+                          ? 'Go to Website'
+                          : 'Search Business on Google'
                       }
                     >
                       <ExternalLink size={14} />
