@@ -78,6 +78,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadData();
+    const interval = setInterval(loadData, 15000); // Live real-time polling every 15s
+    return () => clearInterval(interval);
   }, []);
 
   const getPlatformBadge = (platform: string, leadType: string) => {

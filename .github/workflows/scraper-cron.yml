@@ -1,0 +1,17 @@
+name: 24/7 Auto Scraper
+
+on:
+  schedule:
+    # Runs every 30 minutes, 24/7 completely free via GitHub Actions
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  auto-fetch-leads:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Omni System Scraper
+        run: |
+          echo "Pinging Omni System live order scraper..."
+          curl -s -X POST "https://system-omni.vercel.app/api/cron" -H "Content-Type: application/json"
+          echo "Scraper cycle triggered successfully!"
