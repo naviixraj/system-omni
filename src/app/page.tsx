@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Globe2, Target, TrendingUp, ArrowRight, Clock } from "lucide-react";
+import { Activity, Globe2, Target, TrendingUp, ArrowRight, Clock, RotateCw, Loader2, AlertTriangle, CheckCircle2, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -11,10 +11,12 @@ export default function Dashboard() {
     pitched: 0,
   });
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanStatus, setScanStatus] = useState<{ type: 'success' | 'error' | 'partial'; message: string } | null>(null);
 
-  useEffect(() => {
+  const loadData = () => {
     // Fetch pipeline stats
-    fetch("/api/saved-jobs")
+    fetch("/api/saved-jobs", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -28,7 +30,7 @@ export default function Dashboard() {
       .catch(() => {});
 
     // Fetch live feed for stats and recent projects
-    fetch("/api/live-jobs")
+    fetch("/api/live-jobs", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -36,6 +38,46 @@ export default function Dashboard() {
           setRecentProjects(data.slice(0, 4)); // Get the 4 absolute newest projects
         }
       })
+      .catch(() => {});
+  };
+
+  const triggerScan = async () => {
+    setIsScanning(true);
+    setScanStatus(null);
+    try {
+      const res = await fetch("/api/cron", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.errors && data.errors.length > 0) {
+          setScanStatus({
+            type: 'partial',
+            message: `Synced ${data.newLeadsFound || 0} new orders. (${data.errors.join('; ')})`
+          });
+        } else {
+          setScanStatus({
+            type: 'success',
+            message: `Orders check completed! Found ${data.newLeadsFound || 0} new orders across active platforms.`
+          });
+        }
+        loadData();
+      } else {
+        const errorMsg = data.error || data.message || "Failed to scan orders from remote platforms";
+        setScanStatus({
+          type: 'error',
+          message: `Orders check notice: ${errorMsg}. Click to retry.`
+        });
+      }
+    } catch (err: any) {
+      setScanStatus({
+        type: 'error',
+        message: `Orders check network error: ${err.message || 'Scraper connection interrupted'}. Click to retry.`
+      });
+    }
+    setIsScanning(false);
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   const getPlatformBadge = (platform: string, leadType: string) => {
@@ -82,7 +124,25 @@ export default function Dashboard() {
           </div>
           <h1 className="text-xl font-semibold text-white tracking-tight">System Command Center</h1>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={triggerScan}
+            disabled={isScanning}
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-white/[0.06] hover:bg-white/[0.1] text-neutral-200 border border-white/[0.1] hover:border-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
+            title="Trigger instant live orders check across all platforms"
+          >
+            {isScanning ? (
+              <>
+                <Loader2 size={13} className="animate-spin text-amber-400" />
+                <span>Checking Orders...</span>
+              </>
+            ) : (
+              <>
+                <RotateCw size={13} className="text-emerald-400" />
+                <span>Check Orders Now</span>
+              </>
+            )}
+          </button>
           <Link href="/discovery" className="premium-button text-xs flex items-center gap-2">
             <Globe2 size={14} /> Discovery Feed
           </Link>
@@ -91,6 +151,42 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {/* SCAN STATUS FEEDBACK */}
+      {scanStatus && (
+        <div className={`p-3 rounded-lg border text-xs flex items-center justify-between transition-all ${
+          scanStatus.type === 'error' 
+            ? 'bg-rose-500/10 border-rose-500/20 text-rose-300' 
+            : scanStatus.type === 'partial'
+            ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+            : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+        }`}>
+          <div className="flex items-center gap-2">
+            {scanStatus.type === 'error' ? (
+              <AlertTriangle size={15} className="text-rose-400 shrink-0" />
+            ) : (
+              <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+            )}
+            <span>{scanStatus.message}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {scanStatus.type === 'error' && (
+              <button 
+                onClick={triggerScan} 
+                className="text-[11px] underline hover:text-white px-2 py-0.5"
+              >
+                Retry
+              </button>
+            )}
+            <button 
+              onClick={() => setScanStatus(null)} 
+              className="p-1 hover:bg-white/10 rounded text-neutral-400 hover:text-white"
+            >
+              <X size={13} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* KPI METRICS BAR (LINEAR STYLE) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

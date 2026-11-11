@@ -103,11 +103,15 @@ export async function scrapeMarketplaces() {
     }
   ];
 
-  for (const proj of upworkProjects) {
-    const exists = await prisma.lead.findFirst({ where: { url: proj.url } });
-    if (!exists) {
-      await prisma.lead.create({ data: proj });
+  try {
+    for (const proj of upworkProjects) {
+      const exists = await prisma.lead.findFirst({ where: { url: proj.url } });
+      if (!exists) {
+        await prisma.lead.create({ data: proj });
+      }
     }
+  } catch (error) {
+    console.error("Upwork leads sync failed:", error);
   }
 
   // 3. Fiverr Pro Orders
@@ -135,11 +139,15 @@ export async function scrapeMarketplaces() {
     }
   ];
 
-  for (const proj of fiverrProjects) {
-    const exists = await prisma.lead.findFirst({ where: { url: proj.url } });
-    if (!exists) {
-      await prisma.lead.create({ data: proj });
+  try {
+    for (const proj of fiverrProjects) {
+      const exists = await prisma.lead.findFirst({ where: { url: proj.url } });
+      if (!exists) {
+        await prisma.lead.create({ data: proj });
+      }
     }
+  } catch (error) {
+    console.error("Fiverr Pro leads sync failed:", error);
   }
 
   // 4. Guru & PeoplePerHour Marketplace Contracts
@@ -174,10 +182,14 @@ export async function scrapeMarketplaces() {
     }
   ];
 
-  for (const proj of marketplaceContracts) {
-    const exists = await prisma.lead.findFirst({ where: { url: proj.url } });
-    if (!exists) {
-      await prisma.lead.create({ data: proj });
+  try {
+    for (const proj of marketplaceContracts) {
+      const exists = await prisma.lead.findFirst({ where: { url: proj.url } });
+      if (!exists) {
+        await prisma.lead.create({ data: proj });
+      }
     }
+  } catch (error) {
+    console.error("Guru/PeoplePerHour leads sync failed:", error);
   }
 }

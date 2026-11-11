@@ -1,21 +1,53 @@
 const http = require('http');
 
-console.log("=========================================");
-console.log("🚀 Omni-Cron Automated Runner Started");
-console.log("=========================================");
-console.log("This background process will automatically trigger your global scraper every 5 minutes.");
+console.log("=================================================");
+console.log("🚀 Omni-Cron Automated Runner & Watchdog Started");
+console.log("=================================================");
+console.log("Monitoring and syncing leads from 16+ platforms every 5 minutes.");
+
+let isScanning = false;
 
 function triggerCron() {
-  console.log(`[${new Date().toLocaleTimeString()}] Firing Omni-Cron API...`);
-  
-  http.get('http://127.0.0.1:3000/api/cron', (res) => {
-    let data = '';
-    res.on('data', (chunk) => data += chunk);
+  if (isScanning) {
+    console.log(`[${new Date().toLocaleTimeString()}] Previous scan still in progress. Skipping cycle...`);
+    return;
+  }
+
+  isScanning = true;
+  const stamp = new Date().toLocaleTimeString();
+  console.log(`[${stamp}] Firing Omni-Cron API (http://127.0.0.1:3000/api/cron)...`);
+
+  const req = http.get('http://127.0.0.1:3000/api/cron', (res) => {
+    let rawData = '';
+    res.on('data', (chunk) => { rawData += chunk; });
     res.on('end', () => {
-      console.log(`[${new Date().toLocaleTimeString()}] Success: Data synced from all 16+ platforms!`);
+      isScanning = false;
+      const endStamp = new Date().toLocaleTimeString();
+      try {
+        const parsed = JSON.parse(rawData);
+        if (parsed.success) {
+          console.log(`[${endStamp}] ✅ Success: ${parsed.message} (Total Leads: ${parsed.totalLeads})`);
+          if (parsed.errors && parsed.errors.length > 0) {
+            console.warn(`[${endStamp}] ⚠️ Non-fatal notices:`, parsed.errors.join(' | '));
+          }
+        } else {
+          console.error(`[${endStamp}] ❌ Scan report error:`, parsed.error || parsed.message);
+        }
+      } catch (e) {
+        console.log(`[${endStamp}] Completed with status code ${res.statusCode}:`, rawData.slice(0, 120));
+      }
     });
-  }).on('error', (err) => {
-    console.error(`[${new Date().toLocaleTimeString()}] Error triggering cron. Make sure Next.js is running.`, err.message);
+  });
+
+  req.on('error', (err) => {
+    isScanning = false;
+    console.error(`[${new Date().toLocaleTimeString()}] ❌ Network error triggering cron. Make sure Next.js is running on port 3000:`, err.message);
+  });
+
+  req.setTimeout(45000, () => {
+    isScanning = false;
+    req.destroy();
+    console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ Cron request timed out after 45s. Will retry next cycle.`);
   });
 }
 

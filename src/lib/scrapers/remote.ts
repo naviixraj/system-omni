@@ -137,10 +137,14 @@ export async function scrapeRemoteBoards() {
     }
   ];
 
-  for (const target of wellfoundTargets) {
-    const exists = await prisma.lead.findFirst({ where: { title: target.title } });
-    if (!exists) {
-      await prisma.lead.create({ data: target });
+  try {
+    for (const target of wellfoundTargets) {
+      const exists = await prisma.lead.findFirst({ where: { title: target.title } });
+      if (!exists) {
+        await prisma.lead.create({ data: target });
+      }
     }
+  } catch (error) {
+    console.error("Wellfound leads sync failed:", error);
   }
 }

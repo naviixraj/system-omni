@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone, Smartphone, Gauge, Archive, MapPin, ExternalLink, Layers, Sparkles, Copy, Check } from "lucide-react";
+import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone, Smartphone, Gauge, Archive, MapPin, ExternalLink, Layers, Sparkles, Copy, Check, RotateCw } from "lucide-react";
 
 export default function Discovery() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -15,6 +15,9 @@ export default function Discovery() {
   const [searchQuery, setSearchQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copiedPrice, setCopiedPrice] = useState(false);
+
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanStatus, setScanStatus] = useState<{ type: 'success' | 'error' | 'partial'; message: string } | null>(null);
 
   const fetchJobs = () => {
     fetch("/api/live-jobs")
@@ -32,6 +35,42 @@ export default function Discovery() {
         setJobs([]);
         setLoading(false);
       });
+  };
+
+  const triggerLeadScan = async () => {
+    setIsScanning(true);
+    setScanStatus(null);
+    try {
+      const res = await fetch("/api/cron", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.errors && data.errors.length > 0) {
+          setScanStatus({
+            type: 'partial',
+            message: `Synced ${data.newLeadsFound || 0} new orders. (${data.errors.join('; ')})`
+          });
+        } else {
+          setScanStatus({
+            type: 'success',
+            message: `Successfully checked orders! Found ${data.newLeadsFound || 0} new orders across active platforms.`
+          });
+        }
+        fetchJobs(); // refresh the leads list immediately
+      } else {
+        const errorMsg = data.error || data.message || "Failed to sync orders from remote platforms";
+        setScanStatus({
+          type: 'error',
+          message: `Orders check halted: ${errorMsg}. Click to retry.`
+        });
+      }
+    } catch (err: any) {
+      console.error("Orders check failed:", err);
+      setScanStatus({
+        type: 'error',
+        message: `Orders check error: ${err.message || 'Network timeout connecting to scraper API'}. Click to retry.`
+      });
+    }
+    setIsScanning(false);
   };
 
   useEffect(() => {
@@ -263,7 +302,26 @@ export default function Discovery() {
           </div>
           <h1 className="text-xl font-semibold text-white tracking-tight">Leads & Global Opportunities</h1>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+          <button
+            onClick={triggerLeadScan}
+            disabled={isScanning}
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-white/[0.06] hover:bg-white/[0.1] text-neutral-200 border border-white/[0.1] hover:border-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
+            title="Scan 16+ global platforms and local maps for new orders"
+          >
+            {isScanning ? (
+              <>
+                <Loader2 size={13} className="animate-spin text-amber-400" />
+                <span>Checking Orders...</span>
+              </>
+            ) : (
+              <>
+                <RotateCw size={13} className="text-emerald-400" />
+                <span>Check for New Orders</span>
+              </>
+            )}
+          </button>
+
           <div className="flex items-center px-3 py-1.5 gap-2 rounded-md bg-[#121212] border border-white/[0.08] focus-within:border-white/20 transition-all w-full sm:w-72">
             <Search size={14} className="text-neutral-500 shrink-0" />
             <input 
@@ -281,6 +339,43 @@ export default function Discovery() {
           </div>
         </div>
       </div>
+
+      {/* SCAN STATUS & ERROR FEEDBACK NOTIFICATION */}
+      {scanStatus && (
+        <div className={`p-3 rounded-lg border text-xs flex items-center justify-between transition-all ${
+          scanStatus.type === 'error' 
+            ? 'bg-rose-500/10 border-rose-500/20 text-rose-300' 
+            : scanStatus.type === 'partial'
+            ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+            : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+        }`}>
+          <div className="flex items-center gap-2">
+            {scanStatus.type === 'error' ? (
+              <AlertTriangle size={15} className="text-rose-400 shrink-0" />
+            ) : (
+              <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+            )}
+            <span>{scanStatus.message}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {scanStatus.type === 'error' && (
+              <button 
+                onClick={triggerLeadScan} 
+                className="text-[11px] underline hover:text-white px-2 py-0.5"
+              >
+                Retry Scan
+              </button>
+            )}
+            <button 
+              onClick={() => setScanStatus(null)} 
+              className="p-1 hover:bg-white/10 rounded text-neutral-400 hover:text-white"
+              title="Dismiss notice"
+            >
+              <X size={13} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* SEGMENTED FILTER ROW (LINEAR STYLE) */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-1.5 rounded-lg bg-[#0d0d0d] border border-white/[0.08]">

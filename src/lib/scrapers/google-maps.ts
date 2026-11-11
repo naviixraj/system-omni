@@ -121,7 +121,7 @@ async function scrapeOpenStreetMapFallback() {
     amenity: amenities[Math.floor(Math.random() * amenities.length)]
   }));
 
-  await Promise.all(queries.map(q => runOSMQuery(q.city, q.amenity)));
+  await Promise.allSettled(queries.map(q => runOSMQuery(q.city, q.amenity)));
 }
 
 export async function scrapeGoogleMapsDrip() {
