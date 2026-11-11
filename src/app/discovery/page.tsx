@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone, Smartphone, Gauge, Archive, MapPin, ExternalLink, Layers } from "lucide-react";
+import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone, Smartphone, Gauge, Archive, MapPin, ExternalLink, Layers, Sparkles, Copy, Check } from "lucide-react";
 
 export default function Discovery() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -14,6 +14,7 @@ export default function Discovery() {
   const [issueFilter, setIssueFilter] = useState("ALL"); 
   const [searchQuery, setSearchQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [copiedPrice, setCopiedPrice] = useState(false);
 
   const fetchJobs = () => {
     fetch("/api/live-jobs")
@@ -531,65 +532,99 @@ export default function Discovery() {
 
       {/* DETAILED JOB OVERLAY MODAL */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md animate-in fade-in duration-200 custom-scrollbar" onClick={() => setSelectedJob(null)}>
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div 
-              className="premium-panel w-full max-w-3xl p-4 sm:p-8 relative flex flex-col gap-4 sm:gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 my-4 sm:my-8" 
-              onClick={(e) => e.stopPropagation()} // Prevent clicking inside modal from closing it
-            >
-            <button 
-              onClick={() => setSelectedJob(null)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10"
-            >
-              <X size={20} />
-            </button>
+        <div 
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md animate-in fade-in duration-200 flex items-center justify-center p-3 sm:p-6 custom-scrollbar" 
+          onClick={() => setSelectedJob(null)}
+        >
+          <div 
+            className="w-full max-w-3xl bg-[#0e0e11] border border-white/[0.09] rounded-2xl p-5 sm:p-7 relative flex flex-col gap-5 sm:gap-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] my-auto overflow-hidden" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Ambient Background Glow Accent */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-28 bg-gradient-to-b from-blue-500/10 via-purple-500/5 to-transparent blur-3xl pointer-events-none" />
 
-            {/* Modal Header Banner */}
-            <div>
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded border ${getPlatformBadge(selectedJob.platform, selectedJob.leadType)}`}>
-                    {selectedJob.platform}
+            {/* Top Navigation & Action Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/[0.06] relative z-10">
+              {/* Left: Platform & Metadata Badges */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md border flex items-center gap-1.5 ${getPlatformBadge(selectedJob.platform, selectedJob.leadType)}`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
+                  {selectedJob.platform}
+                </span>
+
+                {selectedJob.issueDetected && (
+                  <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border flex items-center gap-1.5 ${
+                    selectedJob.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                    selectedJob.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                    selectedJob.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                    'bg-neutral-800 text-neutral-400 border-neutral-700'
+                  }`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                    {selectedJob.issueDetected.replace(/_/g, ' ')}
                   </span>
-                  <span className="text-xs text-gray-400 font-medium">
-                    {selectedJob.leadType === 'LOCAL' ? `Located in ${selectedJob.district}` : 'Global Remote Lead'}
-                  </span>
-                </div>
+                )}
 
-                {/* Small Banner Action Buttons (Call, Email, Delete) */}
-                <div className="flex items-center gap-2">
-                  <a
-                    href={resolveLeadContact(selectedJob).callUrl}
-                    target={resolveLeadContact(selectedJob).phone ? "_self" : "_blank"}
-                    rel="noopener noreferrer"
-                    className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-lg border border-emerald-500/20 flex items-center gap-1.5 transition"
-                    title={resolveLeadContact(selectedJob).phone ? `Call ${resolveLeadContact(selectedJob).phone}` : `Look up phone for ${selectedJob.title}`}
-                  >
-                    <Phone size={13} /> Call
-                  </a>
-
-                  <a
-                    href={`mailto:${resolveLeadContact(selectedJob).email}?subject=${encodeURIComponent(`Website Upgrade for ${selectedJob.title}`)}&body=${encodeURIComponent(`Hi ${selectedJob.title} Team,\n\nI reviewed your online presence in ${selectedJob.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
-                    className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-semibold rounded-lg border border-blue-500/20 flex items-center gap-1.5 transition"
-                    title={`Send email to ${resolveLeadContact(selectedJob).email}`}
-                  >
-                    <Mail size={13} /> Email
-                  </a>
-
-                  <button 
-                    onClick={(e) => deleteJob(selectedJob.id, e)} 
-                    disabled={deletingId === selectedJob.id}
-                    className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg border border-red-500/20 flex items-center justify-center transition"
-                    title="Dismiss / Delete Lead from database"
-                  >
-                    {deletingId === selectedJob.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
-                  </button>
-                </div>
+                <span className="text-xs text-neutral-400 flex items-center gap-1">
+                  <MapPin size={12} className="text-neutral-500" />
+                  {selectedJob.leadType === 'LOCAL' ? (selectedJob.district || 'Local Business') : 'Global Remote Lead'}
+                </span>
               </div>
 
-              <div className="flex items-center gap-3 pr-10">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">{selectedJob.title}</h2>
-                {(selectedJob.url || selectedJob.leadType === 'LOCAL') && (
+              {/* Right: Actions Toolbar & Dedicated Close Button */}
+              <div className="flex items-center gap-2">
+                {/* Call Button */}
+                <a
+                  href={resolveLeadContact(selectedJob).callUrl}
+                  target={resolveLeadContact(selectedJob).phone ? "_self" : "_blank"}
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg border border-emerald-500/20 flex items-center gap-1.5 transition-colors"
+                  title={resolveLeadContact(selectedJob).phone ? `Call ${resolveLeadContact(selectedJob).phone}` : `Look up phone for ${selectedJob.title}`}
+                >
+                  <Phone size={12} />
+                  <span className="hidden sm:inline">Call</span>
+                </a>
+
+                {/* Email Button */}
+                <a
+                  href={`mailto:${resolveLeadContact(selectedJob).email}?subject=${encodeURIComponent(`Website Upgrade for ${selectedJob.title}`)}&body=${encodeURIComponent(`Hi ${selectedJob.title} Team,\n\nI reviewed your online presence in ${selectedJob.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
+                  className="px-2.5 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-medium rounded-lg border border-blue-500/20 flex items-center gap-1.5 transition-colors"
+                  title={`Send email to ${resolveLeadContact(selectedJob).email}`}
+                >
+                  <Mail size={12} />
+                  <span className="hidden sm:inline">Email</span>
+                </a>
+
+                {/* Dismiss / Delete Lead Button */}
+                <button 
+                  onClick={(e) => deleteJob(selectedJob.id, e)} 
+                  disabled={deletingId === selectedJob.id}
+                  className="p-1.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-white/[0.06] transition-colors"
+                  title="Dismiss / Delete Lead"
+                >
+                  {deletingId === selectedJob.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
+                </button>
+
+                <div className="w-px h-4 bg-white/[0.08]" />
+
+                {/* Close Modal Button */}
+                <button 
+                  onClick={() => setSelectedJob(null)}
+                  className="p-1.5 text-neutral-400 hover:text-white hover:bg-white/[0.08] rounded-lg border border-white/[0.06] transition-colors"
+                  title="Close Modal"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Title & Official Link Bar */}
+            <div className="flex flex-col gap-2 relative z-10">
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+                {selectedJob.title}
+              </h2>
+
+              {(selectedJob.url || selectedJob.leadType === 'LOCAL') && (
+                <div className="flex flex-wrap items-center gap-2">
                   <a 
                     href={
                       selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE'
@@ -598,89 +633,147 @@ export default function Discovery() {
                     } 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-gray-400 hover:text-blue-400 transition-colors p-2 bg-white/5 rounded-full hover:bg-white/10" 
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] text-xs font-mono text-neutral-300 hover:text-white transition-colors" 
                     title={selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE' ? `Visit ${selectedJob.url}` : `Search ${selectedJob.title} on Google`}
                   >
-                    <Globe2 size={20} />
+                    <Globe2 size={12} className="text-neutral-400" />
+                    <span className="truncate max-w-[280px] sm:max-w-md">
+                      {selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE'
+                        ? selectedJob.url.replace(/^https?:\/\//, '')
+                        : `Google Search: ${selectedJob.title}`}
+                    </span>
+                    <ExternalLink size={11} className="text-neutral-500" />
                   </a>
-                )}
-              </div>
+
+                  <span className="text-xs font-mono text-neutral-400 px-2.5 py-1 rounded-md bg-white/[0.02] border border-white/[0.04]">
+                    {selectedJob.leadType === 'LOCAL' ? 'High Conversion Target' : (selectedJob.budget || 'Open Contract')}
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* AI Intelligence Section */}
-            <div className="bg-[#121212] rounded-xl border border-white/[0.04] overflow-hidden mt-2 min-h-[160px]">
-              <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 px-5 py-3 border-b border-white/[0.04] flex items-center gap-2">
-                <Zap className="text-yellow-400" size={18} fill="currentColor" />
-                <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">True AI Intelligence Report</h3>
+            {/* Modern AI Intelligence Bento Card */}
+            <div className="bg-[#121215] rounded-xl border border-white/[0.08] overflow-hidden relative z-10 shadow-sm">
+              <div className="px-4 py-3 bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={15} className="text-violet-400" />
+                  <span className="text-xs font-semibold text-neutral-200 tracking-wide uppercase">AI Lead Intelligence</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                    Gemini 2.5
+                  </span>
+                </div>
+
+                {!isAnalyzing && aiAnalysis && (
+                  <span className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Verified Analysis
+                  </span>
+                )}
               </div>
-              <div className="p-5 flex flex-col gap-5 ">
+
+              <div className="p-4 sm:p-5 flex flex-col gap-4">
                 {isAnalyzing || !aiAnalysis ? (
-                  <div className="flex flex-col items-center justify-center py-6 gap-3">
-                     <Loader2 className="animate-spin text-purple-400" size={28} />
-                     <p className="text-sm text-gray-400 font-medium animate-pulse">Gemini AI is analyzing client details...</p>
+                  <div className="flex flex-col items-center justify-center py-8 gap-3">
+                    <Loader2 className="animate-spin text-violet-400" size={26} />
+                    <p className="text-xs text-neutral-400 font-medium animate-pulse">
+                      Analyzing client presence, technical flaws, and generating proposal scope...
+                    </p>
                   </div>
                 ) : (
                   <>
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-300 flex items-center gap-2 mb-2">
-                        <Target size={16} className="text-blue-400" /> What to Build (Project Scope)
-                      </h4>
-                      <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-wrap">
+                    {/* Project Scope / What to Build */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-300">
+                        <Target size={14} className="text-blue-400" />
+                        <span>Recommended Scope of Work</span>
+                      </div>
+                      <div className="text-xs text-neutral-300 leading-relaxed bg-white/[0.02] border border-white/[0.04] p-3.5 rounded-lg whitespace-pre-wrap font-sans">
                         {aiAnalysis.requirements}
-                      </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-300 flex items-center gap-2 mb-2">
-                        💰 Suggested Pitch Price
-                      </h4>
-                      <p className="text-sm text-emerald-400 font-semibold bg-emerald-500/10 inline-block px-3 py-1.5 rounded-lg border border-emerald-500/20">
+
+                    {/* Suggested Pitch Price - Modern KPI Widget */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-neutral-300 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                          <span>Suggested Pitch Valuation</span>
+                        </span>
+                        
+                        <button
+                          onClick={() => {
+                            if (aiAnalysis?.suggestedPrice) {
+                              navigator.clipboard.writeText(aiAnalysis.suggestedPrice);
+                              setCopiedPrice(true);
+                              setTimeout(() => setCopiedPrice(false), 2000);
+                            }
+                          }}
+                          className="text-[11px] font-medium text-neutral-400 hover:text-white flex items-center gap-1 transition-colors px-2 py-1 rounded bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06]"
+                          title="Copy Suggested Price and Scope"
+                        >
+                          {copiedPrice ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                          <span>{copiedPrice ? 'Copied' : 'Copy Pitch'}</span>
+                        </button>
+                      </div>
+
+                      <div className="p-3.5 rounded-lg bg-emerald-500/[0.04] border border-emerald-500/20 text-emerald-300 text-xs font-medium leading-relaxed font-mono">
                         {aiAnalysis.suggestedPrice}
-                      </p>
+                      </div>
                     </div>
                   </>
                 )}
               </div>
             </div>
 
-            {/* Deep Technical Audit Section */}
+            {/* Deep Technical Diagnostics Section */}
             {selectedJob.leadType === 'LOCAL' && selectedJob.url && selectedJob.issueDetected !== 'NO_WEBSITE' && (
-              <div className="bg-[#121212] rounded-xl border border-white/[0.04] overflow-hidden mt-2">
-                <div className="bg-gradient-to-r from-red-900/40 to-orange-900/40 px-5 py-3 border-b border-white/[0.04] flex items-center justify-between">
+              <div className="bg-[#121215] rounded-xl border border-white/[0.08] overflow-hidden relative z-10 shadow-sm">
+                <div className="px-4 py-3 bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Activity className="text-red-400" size={18} />
-                    <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">Deep Technical Audit</h3>
+                    <Activity size={15} className="text-rose-400" />
+                    <span className="text-xs font-semibold text-neutral-200 uppercase tracking-wide">
+                      Deep Technical Diagnostics
+                    </span>
                   </div>
+
                   {!deepAuditReport && !isAuditing && (
                     <button 
                       onClick={() => handleDeepAudit(selectedJob.url)}
-                      className="text-xs font-semibold bg-red-500/20 text-red-300 px-3 py-1.5 rounded-lg border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                      className="text-xs font-medium bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 px-3 py-1.5 rounded-lg border border-rose-500/20 flex items-center gap-1.5 transition-all"
                     >
-                      Run Live Scan
+                      <Zap size={12} />
+                      <span>Run Live Scan</span>
                     </button>
                   )}
                 </div>
-                
+
                 {isAuditing && (
-                  <div className="p-8 flex flex-col items-center justify-center gap-3">
-                    <Loader2 className="animate-spin text-red-400" size={28} />
-                    <p className="text-sm text-gray-400 font-medium animate-pulse">Running robotic penetration scan & performance audit...</p>
+                  <div className="p-6 flex flex-col items-center justify-center gap-2.5">
+                    <Loader2 className="animate-spin text-rose-400" size={24} />
+                    <p className="text-xs text-neutral-400 font-medium animate-pulse">
+                      Running robotic penetration scan & performance diagnostics...
+                    </p>
                   </div>
                 )}
 
                 {deepAuditReport && (
-                  <div className="p-5 flex flex-col gap-3">
+                  <div className="p-4 sm:p-5 flex flex-col gap-2.5">
                     {deepAuditReport.map((item: any, idx: number) => (
-                      <div key={idx} className="flex gap-3 items-start bg-white/5 p-3 rounded-lg border border-white/5">
-                        <div className="mt-0.5">
-                          {item.status === 'pass' && <CheckCircle2 className="text-emerald-400" size={18} />}
-                          {item.status === 'warn' && <AlertTriangle className="text-yellow-400" size={18} />}
-                          {item.status === 'fail' && <XCircle className="text-red-400" size={18} />}
+                      <div key={idx} className="flex gap-3 items-start bg-white/[0.02] p-3 rounded-lg border border-white/[0.04]">
+                        <div className="mt-0.5 shrink-0">
+                          {item.status === 'pass' && <CheckCircle2 className="text-emerald-400" size={16} />}
+                          {item.status === 'warn' && <AlertTriangle className="text-amber-400" size={16} />}
+                          {item.status === 'fail' && <XCircle className="text-rose-400" size={16} />}
                         </div>
                         <div>
-                          <h4 className={`text-sm font-bold ${item.status === 'pass' ? 'text-emerald-300' : item.status === 'warn' ? 'text-yellow-300' : 'text-red-300'}`}>
+                          <h4 className={`text-xs font-semibold ${
+                            item.status === 'pass' ? 'text-emerald-300' :
+                            item.status === 'warn' ? 'text-amber-300' :
+                            'text-rose-300'
+                          }`}>
                             {item.title}
                           </h4>
-                          <p className="text-xs text-gray-400 mt-1">{item.message}</p>
+                          <p className="text-[11px] text-neutral-400 mt-0.5 leading-relaxed">{item.message}</p>
                         </div>
                       </div>
                     ))}
@@ -690,7 +783,7 @@ export default function Discovery() {
             )}
 
             {/* Modal Footer Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 mt-2 pt-4 sm:pt-6 border-t border-white/[0.04] justify-between items-stretch sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-white/[0.06] justify-between items-stretch sm:items-center relative z-10">
               {/* Primary Action Button: Audit / Cached Archive / Maps / Post */}
               {(() => {
                 const audit = resolveAuditAction(selectedJob);
@@ -700,21 +793,25 @@ export default function Discovery() {
                     href={audit.href} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="premium-button text-sm flex-1 flex items-center justify-center gap-2 font-medium"
+                    className="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold text-neutral-200 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] flex items-center justify-center gap-2 transition-all shadow-sm"
                     title={audit.label}
                   >
-                    <AuditIcon size={16} />
+                    <AuditIcon size={15} className="text-neutral-300" />
                     <span>{audit.label}</span>
+                    <ExternalLink size={12} className="text-neutral-500" />
                   </a>
                 );
               })()}
 
               {/* Save to CRM Pipeline */}
-              <button onClick={(e) => saveJob(selectedJob, e)} className="premium-button-primary text-sm flex-1 flex items-center justify-center gap-2">
-                <Save size={16} /> Save to CRM Pipeline
+              <button 
+                onClick={(e) => saveJob(selectedJob, e)} 
+                className="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.25)] border border-blue-400/30 flex items-center justify-center gap-2 transition-all"
+              >
+                <Save size={15} />
+                <span>Save to CRM Pipeline</span>
               </button>
             </div>
-          </div>
           </div>
         </div>
       )}
