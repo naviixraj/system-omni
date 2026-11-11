@@ -691,7 +691,7 @@ export default function Discovery() {
 
             {/* Modal Footer Actions */}
             <div className="flex flex-col sm:flex-row gap-3 mt-2 pt-4 sm:pt-6 border-t border-white/[0.04] justify-between items-stretch sm:items-center">
-              {/* Primary Specialized Action: Mobile UX Audit / PageSpeed / Archive / Map / View Post */}
+              {/* Primary Action Button: Audit / Cached Archive / Maps / Post */}
               {(() => {
                 const audit = resolveAuditAction(selectedJob);
                 const AuditIcon = audit.Icon;
@@ -708,20 +708,6 @@ export default function Discovery() {
                   </a>
                 );
               })()}
-
-              {/* Dedicated "Go to Website" button when business has an authentic website */}
-              {selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE' && (
-                <a 
-                  href={selectedJob.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="px-4 py-2.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-neutral-300 hover:text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors shrink-0"
-                  title={`Open official website: ${selectedJob.url}`}
-                >
-                  <Globe2 size={16} />
-                  <span>Go to Website</span>
-                </a>
-              )}
 
               {/* Save to CRM Pipeline */}
               <button onClick={(e) => saveJob(selectedJob, e)} className="premium-button-primary text-sm flex-1 flex items-center justify-center gap-2">
