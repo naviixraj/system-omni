@@ -472,145 +472,155 @@ export default function Discovery() {
                 <div 
                   key={job.id} 
                   onClick={() => handleOpenModal(job)}
-                  className="p-3.5 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3.5 hover:bg-white/[0.02] cursor-pointer transition-colors group"
+                  className="p-3.5 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 hover:bg-white/[0.02] active:bg-white/[0.05] cursor-pointer transition-colors group"
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getPlatformBadge(job.platform, job.leadType)}`}>
-                        {job.platform}
-                      </span>
-
-                      {job.leadType === 'LOCAL' && job.issueDetected && (
-                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border flex items-center gap-1.5 ${
-                          job.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                          job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
-                          job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                          'bg-neutral-800 text-neutral-400 border-neutral-700'
-                        }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${
-                            job.issueDetected === 'ERROR' ? 'bg-red-400' :
-                            job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-400' :
-                            job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-400' :
-                            'bg-neutral-400'
-                          }`}></span>
-                          {job.issueDetected.replace(/_/g, ' ')}
+                  <div className="flex-1 min-w-0 w-full sm:w-auto">
+                    <div className="flex items-center justify-between sm:justify-start gap-2 mb-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getPlatformBadge(job.platform, job.leadType)}`}>
+                          {job.platform}
                         </span>
-                      )}
 
-                      <span className="text-[11px] text-neutral-500">
-                        {job.district || "Live Match"}
+                        {job.leadType === 'LOCAL' && job.issueDetected && (
+                          <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border flex items-center gap-1.5 ${
+                            job.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                            job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                            job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                            'bg-neutral-800 text-neutral-400 border-neutral-700'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              job.issueDetected === 'ERROR' ? 'bg-red-400' :
+                              job.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-400' :
+                              job.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-400' :
+                              'bg-neutral-400'
+                            }`}></span>
+                            {job.issueDetected.replace(/_/g, ' ')}
+                          </span>
+                        )}
+
+                        <span className="text-[11px] text-neutral-500 truncate max-w-[120px] sm:max-w-none">
+                          {job.district || "Live Match"}
+                        </span>
+                      </div>
+
+                      {/* Mobile-only budget pill at top-right */}
+                      <span className="sm:hidden text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 shrink-0">
+                        {job.leadType === 'LOCAL' ? 'High Target' : job.budget}
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-medium text-neutral-100 group-hover:text-white transition-colors truncate">
+                    <h3 className="text-sm font-medium text-neutral-100 group-hover:text-white transition-colors line-clamp-2 sm:truncate">
                       {job.title}
                     </h3>
                   </div>
                   
-                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t border-white/[0.04] sm:border-none">
-                    <span className="text-xs font-mono font-medium text-neutral-300">
+                  <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto pt-2 sm:pt-0 border-t border-white/[0.04] sm:border-none">
+                    {/* Desktop-only budget */}
+                    <span className="hidden sm:inline-block text-xs font-mono font-medium text-neutral-300">
                       {job.leadType === 'LOCAL' ? 'High Target' : job.budget}
                     </span>
 
-                    <div className="flex items-center gap-1.5">
-                      {/* Go to Website Globe Button */}
-                      {(job.url || job.leadType === 'LOCAL') && (
+                    <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-start">
+                      <div className="flex items-center gap-1">
+                        {/* Go to Website Globe Button */}
+                        {(job.url || job.leadType === 'LOCAL') && (
+                          <a
+                            href={
+                              job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE'
+                                ? job.url
+                                : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-2 sm:p-1.5 text-neutral-400 hover:text-white active:bg-white/[0.1] rounded-lg sm:rounded border border-white/[0.06] transition-colors"
+                            title={job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE' ? `Visit ${job.url}` : `Search ${job.title} on Google`}
+                          >
+                            <Globe2 size={14} />
+                          </a>
+                        )}
+
+                        {/* Quick Mobile UX Audit Button */}
+                        {job.leadType === 'LOCAL' && job.issueDetected === 'NOT_MOBILE_FRIENDLY' && job.url && (
+                          <a
+                            href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-2 sm:p-1.5 text-purple-400 hover:text-purple-300 active:bg-purple-500/20 rounded-lg sm:rounded border border-purple-500/20 transition-colors"
+                            title="Run Mobile UX Audit on Google PageSpeed"
+                          >
+                            <Smartphone size={14} />
+                          </a>
+                        )}
+
+                        {/* Quick PageSpeed Audit Button */}
+                        {job.leadType === 'LOCAL' && job.issueDetected === 'SLOW_LOAD' && job.url && (
+                          <a
+                            href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-2 sm:p-1.5 text-amber-400 hover:text-amber-300 active:bg-amber-500/20 rounded-lg sm:rounded border border-amber-500/20 transition-colors"
+                            title="Run PageSpeed Performance Audit"
+                          >
+                            <Gauge size={14} />
+                          </a>
+                        )}
+
+                        {/* Quick Wayback Archive Button */}
+                        {job.leadType === 'LOCAL' && job.issueDetected === 'ERROR' && job.url && (
+                          <a
+                            href={`https://web.archive.org/web/*/${job.url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-2 sm:p-1.5 text-red-400 hover:text-red-300 active:bg-red-500/20 rounded-lg sm:rounded border border-red-500/20 transition-colors"
+                            title="View Cached Archive on Wayback Machine"
+                          >
+                            <Archive size={14} />
+                          </a>
+                        )}
+
+                        {/* Call Option Button */}
                         <a
-                          href={
-                            job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE'
-                              ? job.url
-                              : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`
-                          }
-                          target="_blank"
+                          href={callUrl}
+                          target={phone ? "_self" : "_blank"}
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="p-1.5 text-neutral-400 hover:text-white hover:bg-white/[0.06] rounded border border-white/[0.06] transition-colors"
-                          title={job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE' ? `Visit ${job.url}` : `Search ${job.title} on Google`}
+                          className="p-2 sm:p-1.5 text-emerald-400 hover:text-emerald-300 active:bg-emerald-500/20 rounded-lg sm:rounded border border-emerald-500/20 transition-colors"
+                          title={phone ? `Call ${phone}` : `Find Phone / Call ${job.title}`}
                         >
-                          <Globe2 size={13} />
+                          <Phone size={14} />
                         </a>
-                      )}
 
-                      {/* Quick Mobile UX Audit Button */}
-                      {job.leadType === 'LOCAL' && job.issueDetected === 'NOT_MOBILE_FRIENDLY' && job.url && (
+                        {/* Quick Mail outreach */}
                         <a
-                          href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          href={`mailto:${email}?subject=${encodeURIComponent(`Website Upgrade for ${job.title}`)}&body=${encodeURIComponent(`Hi ${job.title} Team,\n\nI reviewed your online presence in ${job.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="p-1.5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded border border-purple-500/20 transition-colors"
-                          title="Run Mobile UX Audit on Google PageSpeed"
+                          className="p-2 sm:p-1.5 text-blue-400 hover:text-blue-300 active:bg-blue-500/20 rounded-lg sm:rounded border border-blue-500/20 transition-colors"
+                          title={`Send Email to ${email}`}
                         >
-                          <Smartphone size={13} />
+                          <Mail size={14} />
                         </a>
-                      )}
 
-                      {/* Quick PageSpeed Audit Button */}
-                      {job.leadType === 'LOCAL' && job.issueDetected === 'SLOW_LOAD' && job.url && (
-                        <a
-                          href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-1.5 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded border border-amber-500/20 transition-colors"
-                          title="Run PageSpeed Performance Audit"
+                        {/* Dismiss / Delete Lead Button */}
+                        <button 
+                          onClick={(e) => deleteJob(job.id, e)} 
+                          disabled={deletingId === job.id}
+                          className="p-2 sm:p-1.5 text-neutral-500 hover:text-red-400 active:bg-red-500/20 rounded-lg sm:rounded transition-colors"
+                          title="Dismiss / Delete Lead"
                         >
-                          <Gauge size={13} />
-                        </a>
-                      )}
-
-                      {/* Quick Wayback Archive Button */}
-                      {job.leadType === 'LOCAL' && job.issueDetected === 'ERROR' && job.url && (
-                        <a
-                          href={`https://web.archive.org/web/*/${job.url}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded border border-red-500/20 transition-colors"
-                          title="View Cached Archive on Wayback Machine"
-                        >
-                          <Archive size={13} />
-                        </a>
-                      )}
-
-                      {/* Call Option Button */}
-                      <a
-                        href={callUrl}
-                        target={phone ? "_self" : "_blank"}
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded border border-emerald-500/20 transition-colors"
-                        title={phone ? `Call ${phone}` : `Find Phone / Call ${job.title}`}
-                      >
-                        <Phone size={13} />
-                      </a>
-
-                      {/* Quick Mail outreach */}
-                      <a
-                        href={`mailto:${email}?subject=${encodeURIComponent(`Website Upgrade for ${job.title}`)}&body=${encodeURIComponent(`Hi ${job.title} Team,\n\nI reviewed your online presence in ${job.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded border border-blue-500/20 transition-colors"
-                        title={`Send Email to ${email}`}
-                      >
-                        <Mail size={13} />
-                      </a>
+                          {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={14} />}
+                        </button>
+                      </div>
 
                       {/* Move to Pipeline Button */}
                       <button 
                         onClick={(e) => saveJob(job, e)} 
-                        className="px-2.5 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 rounded border border-blue-500/30 flex items-center gap-1.5 transition-colors"
+                        className="px-3 py-1.5 sm:py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-lg sm:rounded border border-blue-500/30 flex items-center gap-1.5 transition-all shadow-sm"
                       >
-                        <Save size={12} /> Pipeline
-                      </button>
-
-                      {/* Dismiss / Delete Lead Button */}
-                      <button 
-                        onClick={(e) => deleteJob(job.id, e)} 
-                        disabled={deletingId === job.id}
-                        className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                        title="Dismiss / Delete Lead"
-                      >
-                        {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
+                        <Save size={13} /> Pipeline
                       </button>
                     </div>
                   </div>
@@ -631,6 +641,8 @@ export default function Discovery() {
             className="w-full max-w-3xl bg-[#0e0e11] border border-white/[0.09] rounded-t-2xl sm:rounded-2xl p-4 sm:p-7 relative flex flex-col gap-4 sm:gap-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] max-h-[92vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar my-0 sm:my-auto" 
             onClick={(e) => e.stopPropagation()}
           >
+            {/* iOS/Android Bottom Sheet Pull Handle Indicator */}
+            <div className="w-12 h-1 rounded-full bg-white/20 mx-auto mb-1 sm:hidden shrink-0" />
             {/* Ambient Background Glow Accent */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-28 bg-gradient-to-b from-blue-500/10 via-purple-500/5 to-transparent blur-3xl pointer-events-none" />
 

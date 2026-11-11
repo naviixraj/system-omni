@@ -354,7 +354,7 @@ export default function Pipeline() {
                   {job.status !== 'QUEUED' && (
                     <button
                       onClick={(e) => handleQuickMove(job.id, 'QUEUED', e)}
-                      className="text-[10px] font-medium px-2 py-1 bg-white/[0.04] active:bg-white/[0.1] text-neutral-300 rounded border border-white/[0.08]"
+                      className="text-xs font-medium px-2.5 py-1.5 bg-white/[0.06] active:bg-white/[0.15] active:scale-95 text-neutral-200 rounded-lg border border-white/[0.1] transition-all"
                     >
                       ← Queued
                     </button>
@@ -362,7 +362,7 @@ export default function Pipeline() {
                   {job.status !== 'PITCHED' && (
                     <button
                       onClick={(e) => handleQuickMove(job.id, 'PITCHED', e)}
-                      className="text-[10px] font-medium px-2 py-1 bg-purple-500/10 active:bg-purple-500/20 text-purple-300 rounded border border-purple-500/20"
+                      className="text-xs font-medium px-2.5 py-1.5 bg-purple-500/15 active:bg-purple-500/30 active:scale-95 text-purple-300 rounded-lg border border-purple-500/30 transition-all"
                     >
                       {job.status === 'QUEUED' ? 'Pitched →' : '← Pitched'}
                     </button>
@@ -370,7 +370,7 @@ export default function Pipeline() {
                   {job.status !== 'WON' && (
                     <button
                       onClick={(e) => handleQuickMove(job.id, 'WON', e)}
-                      className="text-[10px] font-medium px-2 py-1 bg-emerald-500/10 active:bg-emerald-500/20 text-emerald-300 rounded border border-emerald-500/20"
+                      className="text-xs font-medium px-2.5 py-1.5 bg-emerald-500/15 active:bg-emerald-500/30 active:scale-95 text-emerald-300 rounded-lg border border-emerald-500/30 transition-all"
                     >
                       Won 🏆
                     </button>
@@ -386,32 +386,34 @@ export default function Pipeline() {
 
   return (
     <div className="max-w-[1400px] mx-auto min-h-[calc(100vh-100px)] flex flex-col">
-      <div className="flex justify-between items-center mb-4 md:mb-8">
+      <div className="flex justify-between items-center mb-3 sm:mb-6">
         <div>
-          <h1 className="text-xl md:text-3xl font-extrabold text-white mb-1 tracking-tight">CRM Pipeline</h1>
-          <p className="text-gray-500 text-xs md:text-sm">Manage deals through each conversion stage.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">CRM Pipeline</h1>
+          <p className="text-neutral-500 text-xs">Manage deals through each conversion stage.</p>
         </div>
       </div>
 
-      {/* MOBILE SEGMENTED COLUMN SWITCHER */}
-      <div className="md:hidden flex items-center p-1 rounded-lg bg-[#0d0d0d] border border-white/[0.08] mb-4 gap-1">
+      {/* MOBILE SEGMENTED COLUMN SWITCHER (IOS STYLE) */}
+      <div className="md:hidden flex items-center p-1.5 rounded-xl bg-[#0c0c0e] border border-white/[0.08] mb-4 gap-1.5 shadow-sm">
         {[
-          { key: 'QUEUED', label: 'Queued', count: jobs.filter(j => j.status === 'QUEUED').length, dot: 'bg-blue-500' },
-          { key: 'PITCHED', label: 'Pitched', count: jobs.filter(j => j.status === 'PITCHED').length, dot: 'bg-purple-500' },
-          { key: 'WON', label: 'Won Deals', count: jobs.filter(j => j.status === 'WON').length, dot: 'bg-emerald-500' },
+          { key: 'QUEUED', label: 'Queued', count: jobs.filter(j => j.status === 'QUEUED').length, dot: 'bg-blue-400' },
+          { key: 'PITCHED', label: 'Pitched', count: jobs.filter(j => j.status === 'PITCHED').length, dot: 'bg-purple-400' },
+          { key: 'WON', label: 'Won Deals', count: jobs.filter(j => j.status === 'WON').length, dot: 'bg-emerald-400' },
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setMobileTab(tab.key as any)}
-            className={`flex-1 py-2 px-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
               mobileTab === tab.key 
-                ? 'bg-white/[0.1] text-white border border-white/[0.1] shadow-sm' 
+                ? 'bg-white/[0.12] text-white border border-white/[0.15] shadow-sm' 
                 : 'text-neutral-400 hover:text-white'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${tab.dot}`}></span>
+            <span className={`w-2 h-2 rounded-full ${tab.dot} ${mobileTab === tab.key ? 'animate-pulse' : 'opacity-70'}`}></span>
             <span>{tab.label}</span>
-            <span className="text-[10px] bg-white/[0.06] px-1 rounded font-mono">{tab.count}</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${mobileTab === tab.key ? 'bg-white/20 text-white' : 'bg-white/[0.04] text-neutral-400'}`}>
+              {tab.count}
+            </span>
           </button>
         ))}
       </div>

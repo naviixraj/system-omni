@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe2, Target, ArrowRight, Clock, RotateCw, Loader2, AlertTriangle, CheckCircle2, X } from "lucide-react";
+import { Globe2, Target, ArrowRight, Clock, RotateCw, Loader2, AlertTriangle, CheckCircle2, X, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -117,46 +117,63 @@ export default function Dashboard() {
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       {/* HEADER BREADCRUMB & ACTIONS */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/[0.08]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3.5 pb-4 border-b border-white/[0.08]">
         <div>
-          <div className="flex items-center gap-2 text-xs text-neutral-500 mb-1">
+          <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-500 mb-1">
             <span>Workspace</span>
             <span>/</span>
             <span className="text-neutral-300">Overview</span>
           </div>
-          <h1 className="text-xl font-semibold text-white tracking-tight">System Command Center</h1>
+          <div className="flex items-center justify-between w-full sm:w-auto">
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">System Command Center</h1>
+            <span className="sm:hidden flex items-center gap-1 text-[9px] text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Auto-Sync 15s
+            </span>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5">
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <button
             onClick={triggerScan}
             disabled={isScanning}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-white/[0.06] hover:bg-white/[0.1] text-neutral-200 border border-white/[0.1] hover:border-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.12] active:bg-white/[0.18] active:scale-[0.98] text-neutral-100 border border-white/[0.12] hover:border-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm min-h-[42px] sm:min-h-0"
             title="Trigger instant live orders check across all platforms"
           >
             {isScanning ? (
               <>
-                <Loader2 size={13} className="animate-spin text-amber-400" />
-                <span>Checking Orders...</span>
+                <Loader2 size={14} className="animate-spin text-amber-400" />
+                <span>Checking 16+ Platforms...</span>
               </>
             ) : (
               <>
-                <RotateCw size={13} className="text-emerald-400" />
+                <RotateCw size={14} className="text-emerald-400" />
                 <span>Check Orders Now</span>
               </>
             )}
           </button>
-          <Link href="/discovery" className="premium-button text-xs flex items-center gap-2">
-            <Globe2 size={14} /> Discovery Feed
-          </Link>
-          <Link href="/pipeline" className="premium-button-primary text-xs flex items-center gap-2">
-            <Target size={14} /> Pipeline Board
-          </Link>
+
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+            <Link 
+              href="/discovery" 
+              className="premium-button text-xs flex items-center justify-center gap-2 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md active:scale-[0.98] min-h-[42px] sm:min-h-0 text-center font-medium"
+            >
+              <Globe2 size={14} className="text-blue-400 shrink-0" /> 
+              <span>Discovery</span>
+            </Link>
+            <Link 
+              href="/pipeline" 
+              className="premium-button-primary text-xs flex items-center justify-center gap-2 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md active:scale-[0.98] min-h-[42px] sm:min-h-0 text-center font-medium"
+            >
+              <Target size={14} className="shrink-0" /> 
+              <span>Pipeline</span>
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* SCAN STATUS FEEDBACK */}
       {scanStatus && (
-        <div className={`p-3 rounded-lg border text-xs flex items-center justify-between transition-all ${
+        <div className={`p-3 rounded-xl border text-xs flex items-center justify-between transition-all ${
           scanStatus.type === 'error' 
             ? 'bg-rose-500/10 border-rose-500/20 text-rose-300' 
             : scanStatus.type === 'partial'
@@ -169,9 +186,9 @@ export default function Dashboard() {
             ) : (
               <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
             )}
-            <span>{scanStatus.message}</span>
+            <span className="leading-snug">{scanStatus.message}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {scanStatus.type === 'error' && (
               <button 
                 onClick={triggerScan} 
@@ -192,45 +209,57 @@ export default function Dashboard() {
 
       {/* KPI METRICS BAR (LINEAR STYLE) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between">
+        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between rounded-xl active:scale-[0.98] transition-transform">
           <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
-            <span className="truncate">Total Leads</span>
+            <span className="truncate flex items-center gap-1.5">
+              <Globe2 size={13} className="text-emerald-400" />
+              Total Leads
+            </span>
             <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">+12%</span>
           </div>
-          <div className="text-xl sm:text-2xl font-semibold text-white tracking-tight">{stats.discovered}</div>
+          <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">{stats.discovered}</div>
           <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Live database records</div>
         </div>
 
-        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between">
+        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between rounded-xl active:scale-[0.98] transition-transform">
           <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
-            <span className="truncate">Pipeline</span>
+            <span className="truncate flex items-center gap-1.5">
+              <Target size={13} className="text-blue-400" />
+              Pipeline
+            </span>
             <span className="text-[10px] text-blue-400 font-medium bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 shrink-0">Deals</span>
           </div>
-          <div className="text-xl sm:text-2xl font-semibold text-white tracking-tight">{stats.active}</div>
+          <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">{stats.active}</div>
           <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Saved to CRM pipeline</div>
         </div>
 
-        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between">
+        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between rounded-xl active:scale-[0.98] transition-transform">
           <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
-            <span className="truncate">AI Pitches</span>
+            <span className="truncate flex items-center gap-1.5">
+              <Sparkles size={13} className="text-purple-400" />
+              AI Pitches
+            </span>
             <span className="text-[10px] text-purple-400 font-medium bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20 shrink-0">AI</span>
           </div>
-          <div className="text-xl sm:text-2xl font-semibold text-white tracking-tight">{stats.pitched}</div>
+          <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">{stats.pitched}</div>
           <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Outreach generated</div>
         </div>
 
-        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between">
+        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between rounded-xl active:scale-[0.98] transition-transform">
           <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
-            <span className="truncate">Scraper</span>
+            <span className="truncate flex items-center gap-1.5">
+              <RotateCw size={13} className="text-emerald-400" />
+              Scraper
+            </span>
             <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">Online</span>
           </div>
-          <div className="text-xl sm:text-2xl font-semibold text-white tracking-tight">Active</div>
+          <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">Active</div>
           <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Scanning 16+ Platforms</div>
         </div>
       </div>
 
       {/* RECENT LEADS SPLIT LIST (LINEAR DATA-DENSE VIEW) */}
-      <div className="premium-panel overflow-hidden">
+      <div className="premium-panel overflow-hidden rounded-xl">
         <div className="px-3.5 sm:px-5 py-3 sm:py-3.5 border-b border-white/[0.08] flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-2.5">
             <Clock size={14} className="text-neutral-400" />
@@ -248,13 +277,19 @@ export default function Dashboard() {
         ) : (
           <div className="divide-y divide-white/[0.06]">
             {recentProjects.map((project) => (
-              <div key={project.id} className="px-3.5 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
-                <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border shrink-0 ${getPlatformBadge(project.platform, project.leadType)}`}>
+              <Link 
+                key={project.id} 
+                href="/discovery"
+                className="px-3.5 sm:px-5 py-3.5 sm:py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3 hover:bg-white/[0.03] active:bg-white/[0.06] transition-colors group block"
+              >
+                <div className="flex items-start sm:items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1 w-full">
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border shrink-0 mt-0.5 sm:mt-0 ${getPlatformBadge(project.platform, project.leadType)}`}>
                     {project.platform}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-xs font-medium text-neutral-100 truncate">{project.title}</h3>
+                    <h3 className="text-xs sm:text-xs font-medium text-neutral-100 group-hover:text-white line-clamp-1">
+                      {project.title}
+                    </h3>
                     <p className="text-[11px] text-neutral-500 mt-0.5 truncate">
                       {project.leadType === 'LOCAL' 
                         ? `Issue: ${project.issueDetected?.replace(/_/g, ' ') || 'None'} • ${project.district || 'Local'}` 
@@ -263,15 +298,15 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                  <span className="text-[11px] sm:text-xs font-mono font-medium text-neutral-300 whitespace-nowrap">
+                <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto pt-1 sm:pt-0 border-t border-white/[0.03] sm:border-none">
+                  <span className="text-[11px] sm:text-xs font-mono font-medium text-emerald-400/90 sm:text-neutral-300">
                     {project.leadType === 'LOCAL' ? 'High Target' : project.budget}
                   </span>
-                  <Link href="/discovery" className="p-1.5 text-neutral-500 hover:text-neutral-200 hover:bg-white/[0.05] rounded transition-colors" title="View details in discovery">
+                  <div className="p-1 text-neutral-500 group-hover:text-neutral-200 transition-colors">
                     <ArrowRight size={14} />
-                  </Link>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
