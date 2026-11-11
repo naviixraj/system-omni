@@ -634,20 +634,23 @@ export default function Discovery() {
       {/* DETAILED JOB OVERLAY MODAL */}
       {selectedJob && (
         <div 
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200 flex items-end sm:items-center justify-center p-0 sm:p-6 custom-scrollbar touch-scroll" 
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 flex flex-col justify-end sm:justify-center sm:items-center sm:p-6 overscroll-none" 
           onClick={() => setSelectedJob(null)}
         >
           <div 
-            className="w-full max-w-3xl bg-[#0e0e11] border border-white/[0.09] rounded-t-2xl sm:rounded-2xl p-4 sm:p-7 relative flex flex-col gap-4 sm:gap-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] max-h-[92vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar my-0 sm:my-auto" 
+            className="w-full max-w-3xl bg-[#0e0e11] border border-white/[0.1] rounded-t-3xl sm:rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col h-[88vh] sm:h-auto sm:max-h-[88vh] relative overflow-hidden" 
             onClick={(e) => e.stopPropagation()}
           >
-            {/* iOS/Android Bottom Sheet Pull Handle Indicator */}
-            <div className="w-12 h-1 rounded-full bg-white/20 mx-auto mb-1 sm:hidden shrink-0" />
             {/* Ambient Background Glow Accent */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-28 bg-gradient-to-b from-blue-500/10 via-purple-500/5 to-transparent blur-3xl pointer-events-none" />
 
-            {/* Top Navigation & Action Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/[0.06] relative z-10">
+            {/* STICKY TOP HEADER: PULL HANDLE, BADGES, ACTIONS & TITLE */}
+            <div className="shrink-0 p-4 sm:p-6 border-b border-white/[0.08] bg-[#0e0e11]/95 backdrop-blur-md relative z-10 flex flex-col gap-2.5">
+              {/* iOS/Android Bottom Sheet Pull Handle Indicator */}
+              <div className="w-12 h-1.5 rounded-full bg-white/20 mx-auto -mt-1 mb-1 sm:hidden shrink-0" />
+
+              {/* Top Navigation & Action Toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-white/[0.06] relative z-10">
               {/* Left: Platform & Metadata Badges */}
               <div className="flex flex-wrap items-center gap-2">
                 <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md border flex items-center gap-1.5 ${getPlatformBadge(selectedJob.platform, selectedJob.leadType)}`}>
@@ -754,9 +757,12 @@ export default function Discovery() {
                 </div>
               )}
             </div>
+          </div>
 
+          {/* SMOOTHLY SCROLLABLE MODAL BODY (TOUCH-PAN-Y) */}
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y custom-scrollbar p-4 sm:p-6 space-y-4 relative z-10">
             {/* Modern AI Intelligence Bento Card */}
-            <div className="bg-[#121215] rounded-xl border border-white/[0.08] overflow-hidden relative z-10 shadow-sm">
+            <div className="bg-[#121215] rounded-xl border border-white/[0.08] overflow-hidden relative shadow-sm">
               <div className="px-4 py-3 bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Sparkles size={15} className="text-violet-400" />
@@ -884,9 +890,10 @@ export default function Discovery() {
                 )}
               </div>
             )}
+          </div>
 
-            {/* Modal Footer Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-white/[0.06] justify-between items-stretch sm:items-center relative z-10">
+          {/* STICKY BOTTOM ACTIONS BAR */}
+          <div className="shrink-0 p-3.5 sm:p-5 border-t border-white/[0.08] bg-[#0c0c0e]/95 backdrop-blur-md flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-between items-stretch sm:items-center relative z-10 pb-[max(1rem,env(safe-area-inset-bottom))]">
               {/* Primary Action Button: Audit / Cached Archive / Maps / Post */}
               {(() => {
                 const audit = resolveAuditAction(selectedJob);

@@ -110,3 +110,13 @@ body {
 .touch-scroll {
   -webkit-overflow-scrolling: touch;
 }
+
+.touch-pan-y {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.overscroll-contain {
+  overscroll-behavior-y: contain;
+}
+
