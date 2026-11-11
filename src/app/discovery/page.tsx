@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone } from "lucide-react";
+import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone, Smartphone, Gauge, Archive, MapPin, ExternalLink } from "lucide-react";
 
 export default function Discovery() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -166,6 +166,52 @@ export default function Discovery() {
       : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || "") + " phone number")}`;
 
     return { email, phone, callUrl };
+  };
+
+  const resolveAuditAction = (job: any) => {
+    if (!job) return { label: 'Go to Website', href: '#', Icon: Globe2 };
+
+    if (job.leadType === 'LOCAL') {
+      if (job.issueDetected === 'NOT_MOBILE_FRIENDLY') {
+        return {
+          label: 'Run Mobile UX Audit',
+          href: job.url ? `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}` : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`,
+          Icon: Smartphone,
+        };
+      }
+      if (job.issueDetected === 'SLOW_LOAD') {
+        return {
+          label: 'Run PageSpeed Audit',
+          href: job.url ? `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}` : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`,
+          Icon: Gauge,
+        };
+      }
+      if (job.issueDetected === 'ERROR') {
+        return {
+          label: 'View Cached Archive',
+          href: job.url ? `https://web.archive.org/web/*/${job.url}` : `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`,
+          Icon: Archive,
+        };
+      }
+      if (job.issueDetected === 'NO_WEBSITE') {
+        return {
+          label: 'Open in Google Maps',
+          href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.title + " " + (job.district || ""))}`,
+          Icon: MapPin,
+        };
+      }
+      return {
+        label: 'Audit Website',
+        href: job.url || `https://www.google.com/search?q=${encodeURIComponent(job.title + " " + (job.district || ""))}`,
+        Icon: ExternalLink,
+      };
+    }
+
+    return {
+      label: 'View Original Post',
+      href: job.url || '#',
+      Icon: ExternalLink,
+    };
   };
 
   const uniquePlatforms = Array.from(new Set(jobs.map(j => j.platform)));
@@ -341,6 +387,48 @@ export default function Discovery() {
                           title={job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE' ? `Visit ${job.url}` : `Search ${job.title} on Google`}
                         >
                           <Globe2 size={13} />
+                        </a>
+                      )}
+
+                      {/* Quick Mobile UX Audit Button */}
+                      {job.leadType === 'LOCAL' && job.issueDetected === 'NOT_MOBILE_FRIENDLY' && job.url && (
+                        <a
+                          href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded border border-purple-500/20 transition-colors"
+                          title="Run Mobile UX Audit on Google PageSpeed"
+                        >
+                          <Smartphone size={13} />
+                        </a>
+                      )}
+
+                      {/* Quick PageSpeed Audit Button */}
+                      {job.leadType === 'LOCAL' && job.issueDetected === 'SLOW_LOAD' && job.url && (
+                        <a
+                          href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded border border-amber-500/20 transition-colors"
+                          title="Run PageSpeed Performance Audit"
+                        >
+                          <Gauge size={13} />
+                        </a>
+                      )}
+
+                      {/* Quick Wayback Archive Button */}
+                      {job.leadType === 'LOCAL' && job.issueDetected === 'ERROR' && job.url && (
+                        <a
+                          href={`https://web.archive.org/web/*/${job.url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded border border-red-500/20 transition-colors"
+                          title="View Cached Archive on Wayback Machine"
+                        >
+                          <Archive size={13} />
                         </a>
                       )}
 
@@ -553,22 +641,40 @@ export default function Discovery() {
             )}
 
             {/* Modal Footer Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2 pt-4 sm:pt-6 border-t border-white/[0.04] justify-between items-stretch sm:items-center">
-              <a 
-                href={
-                  selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE'
-                    ? selectedJob.url
-                    : `https://www.google.com/search?q=${encodeURIComponent(selectedJob.title + " " + (selectedJob.district || ""))}`
-                } 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="premium-button text-sm flex-1 text-center"
-              >
-                {selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE'
-                  ? 'Go to Website'
-                  : 'Search Business on Google'}
-              </a>
+            <div className="flex flex-col sm:flex-row gap-3 mt-2 pt-4 sm:pt-6 border-t border-white/[0.04] justify-between items-stretch sm:items-center">
+              {/* Primary Specialized Action: Mobile UX Audit / PageSpeed / Archive / Map / View Post */}
+              {(() => {
+                const audit = resolveAuditAction(selectedJob);
+                const AuditIcon = audit.Icon;
+                return (
+                  <a 
+                    href={audit.href} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="premium-button text-sm flex-1 flex items-center justify-center gap-2 font-medium"
+                    title={audit.label}
+                  >
+                    <AuditIcon size={16} />
+                    <span>{audit.label}</span>
+                  </a>
+                );
+              })()}
 
+              {/* Dedicated "Go to Website" button when business has an authentic website */}
+              {selectedJob.url && selectedJob.url.trim() !== '' && selectedJob.issueDetected !== 'NO_WEBSITE' && (
+                <a 
+                  href={selectedJob.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-neutral-300 hover:text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors shrink-0"
+                  title={`Open official website: ${selectedJob.url}`}
+                >
+                  <Globe2 size={16} />
+                  <span>Go to Website</span>
+                </a>
+              )}
+
+              {/* Save to CRM Pipeline */}
               <button onClick={(e) => saveJob(selectedJob, e)} className="premium-button-primary text-sm flex-1 flex items-center justify-center gap-2">
                 <Save size={16} /> Save to CRM Pipeline
               </button>

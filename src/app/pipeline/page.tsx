@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ExternalLink, Loader2, Copy, Check, RotateCcw, Globe2, Trash2, Mail, Phone } from "lucide-react";
+import { Sparkles, ExternalLink, Loader2, Copy, Check, RotateCcw, Globe2, Trash2, Mail, Phone, Smartphone, Gauge, Archive } from "lucide-react";
 
 export default function Pipeline() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -162,6 +162,45 @@ export default function Pipeline() {
                       }
                     >
                       <Globe2 size={13} />
+                    </a>
+                  )}
+
+                  {/* Quick Mobile UX Audit Button */}
+                  {job.leadType === 'LOCAL' && job.issueDetected === 'NOT_MOBILE_FRIENDLY' && job.url && (
+                    <a
+                      href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded transition-colors"
+                      title="Run Mobile UX Audit on Google PageSpeed"
+                    >
+                      <Smartphone size={13} />
+                    </a>
+                  )}
+
+                  {/* Quick PageSpeed Audit Button */}
+                  {job.leadType === 'LOCAL' && job.issueDetected === 'SLOW_LOAD' && job.url && (
+                    <a
+                      href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded transition-colors"
+                      title="Run PageSpeed Performance Audit"
+                    >
+                      <Gauge size={13} />
+                    </a>
+                  )}
+
+                  {/* Quick Wayback Archive Button */}
+                  {job.leadType === 'LOCAL' && job.issueDetected === 'ERROR' && job.url && (
+                    <a
+                      href={`https://web.archive.org/web/*/${job.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                      title="View Cached Archive on Wayback Machine"
+                    >
+                      <Archive size={13} />
                     </a>
                   )}
                   <button
