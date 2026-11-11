@@ -195,7 +195,7 @@ export default function Discovery() {
         if (host && host.includes('.')) {
           email = `contact@${host}`;
         }
-      } catch (e) {}
+      } catch {}
     }
     if (!email && job.title) {
       const slug = job.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);

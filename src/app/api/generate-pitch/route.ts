@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const job = await req.json();
-    const { title, platform, leadType, district, url, issueDetected } = job;
+    const { title, platform, leadType, district, issueDetected } = job;
     
     let auditContext = "";
     

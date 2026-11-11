@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, Compass, Layers, Settings, Menu, X, CheckCircle2, Shield } from 'lucide-react';
+import { LayoutDashboard, Compass, Layers, Menu, X, Shield } from 'lucide-react';
 
 export default function Sidebar() {
   const pathname = usePathname();

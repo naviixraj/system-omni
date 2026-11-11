@@ -20,7 +20,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST() {
   // We don't actually use POST to save from Discovery anymore. We use PATCH to move them!
   return NextResponse.json({ error: 'Use PATCH to move leads to pipeline' }, { status: 400 });
 }

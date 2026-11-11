@@ -33,7 +33,7 @@ function triggerCron() {
         } else {
           console.error(`[${endStamp}] ❌ Scan report error:`, parsed.error || parsed.message);
         }
-      } catch (e) {
+      } catch {
         console.log(`[${endStamp}] Completed with status code ${res.statusCode}:`, rawData.slice(0, 120));
       }
     });

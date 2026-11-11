@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ExternalLink, Loader2, Copy, Check, RotateCcw, Globe2, Trash2, Mail, Phone, Smartphone, Gauge, Archive } from "lucide-react";
+import { Sparkles, Loader2, Copy, Check, RotateCcw, Globe2, Trash2, Mail, Smartphone, Gauge, Archive } from "lucide-react";
 
 export default function Pipeline() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -328,7 +328,7 @@ export default function Pipeline() {
                         const urlObj = new URL(job.url.startsWith('http') ? job.url : 'http://' + job.url);
                         const host = urlObj.hostname.replace(/^www\./, '');
                         if (host && host.includes('.')) targetEmail = `contact@${host}`;
-                      } catch (e) {}
+                      } catch {}
                     }
                     if (!targetEmail && job.title) {
                       const slug = job.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);

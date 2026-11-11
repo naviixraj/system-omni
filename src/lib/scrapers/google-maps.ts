@@ -27,7 +27,7 @@ async function auditWebsite(url: string): Promise<string | null> {
     if (!hasViewport) return 'NOT_MOBILE_FRIENDLY';
 
     return null; 
-  } catch (error) {
+  } catch {
     return 'ERROR';
   }
 }
@@ -55,8 +55,8 @@ async function runOSMQuery(city: string, amenity: string) {
       if (!businessName || businessName.length < 3) continue;
 
       let websiteUrl = item.extratags?.website || item.extratags?.['contact:website'] || null;
-      let phoneNum = item.extratags?.phone || item.extratags?.['contact:phone'] || item.extratags?.['contact:mobile'] || null;
-      let emailAddr = item.extratags?.email || item.extratags?.['contact:email'] || null;
+      const phoneNum = item.extratags?.phone || item.extratags?.['contact:phone'] || item.extratags?.['contact:mobile'] || null;
+      const emailAddr = item.extratags?.email || item.extratags?.['contact:email'] || null;
 
       const exists = await prisma.lead.findFirst({ where: { title: businessName } });
       if (exists) continue;

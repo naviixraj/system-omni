@@ -10,8 +10,6 @@
     "postinstall": "node ./scripts/prepare-prisma.js && prisma generate"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "firebase": "^13.2.0",
     "groq-sdk": "^1.6.0",
     "lucide-react": "^1.47.0",
     "next": "16.3.6",
