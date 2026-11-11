@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "node ./scripts/prepare-prisma.js && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "node ./scripts/prepare-prisma.js && prisma generate"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
