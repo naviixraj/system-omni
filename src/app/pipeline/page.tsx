@@ -26,6 +26,38 @@ export default function Pipeline() {
       });
   }, []);
 
+  const getPlatformBadge = (platform: string, leadType: string) => {
+    switch (platform) {
+      case 'UPWORK':
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      case 'REMOTEOK':
+        return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+      case 'WEWORKREMOTELY':
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case 'HACKER_NEWS':
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'FIVERR PRO':
+        return 'bg-teal-500/10 text-teal-400 border-teal-500/20';
+      case 'GURU':
+        return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+      case 'PEOPLEPERHOUR':
+        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'X (TWITTER)':
+        return 'bg-neutral-800 text-neutral-300 border-neutral-700';
+      case 'REDDIT (r/forhire)':
+      case 'REDDIT (r/slavelabour)':
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'LINKEDIN':
+        return 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+      case 'WELLFOUND':
+        return 'bg-red-500/10 text-red-400 border-red-500/20';
+      default:
+        return leadType === 'LOCAL' 
+          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+          : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+    }
+  };
+
   const handleUnsave = async (jobId: string) => {
     setDeletingId(jobId);
     try {
@@ -136,11 +168,7 @@ export default function Pipeline() {
               className="bg-[#121212] border border-white/[0.08] hover:border-white/20 p-3.5 rounded-lg cursor-grab active:cursor-grabbing transition-colors flex flex-col gap-2.5 shadow-none"
             >
               <div className="flex justify-between items-start">
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
-                  job.leadType === 'LOCAL' 
-                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
-                    : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                }`}>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getPlatformBadge(job.platform, job.leadType)}`}>
                   {job.platform}
                 </span>
 

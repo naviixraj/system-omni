@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone, Smartphone, Gauge, Archive, MapPin, ExternalLink } from "lucide-react";
+import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone, Smartphone, Gauge, Archive, MapPin, ExternalLink, Layers } from "lucide-react";
 
 export default function Discovery() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -133,12 +133,14 @@ export default function Discovery() {
   });
 
   filteredJobs = filteredJobs.sort((a, b) => {
-    // 1. Force BUGGED websites (SLOW_LOAD, ERROR, NOT_MOBILE_FRIENDLY) to the absolute top of the feed
-    const isBuggedA = (a.issueDetected && a.issueDetected !== 'NO_WEBSITE') ? 1 : 0;
-    const isBuggedB = (b.issueDetected && b.issueDetected !== 'NO_WEBSITE') ? 1 : 0;
-    if (isBuggedA !== isBuggedB) return isBuggedB - isBuggedA;
+    // 1. If user is specifically on LOCAL tab, prioritize bugged local websites first
+    if (activeTab === "LOCAL") {
+      const isBuggedA = (a.issueDetected && a.issueDetected !== 'NO_WEBSITE') ? 1 : 0;
+      const isBuggedB = (b.issueDetected && b.issueDetected !== 'NO_WEBSITE') ? 1 : 0;
+      if (isBuggedA !== isBuggedB) return isBuggedB - isBuggedA;
+    }
 
-    // 2. Normal sorting for the rest
+    // 2. Normal sorting for All Leads and Freelance Projects
     if (sortOrder === "BUDGET_DESC") return parseBudget(b.budget || b.issueDetected) - parseBudget(a.budget || a.issueDetected);
     if (sortOrder === "BUDGET_ASC") return parseBudget(a.budget || a.issueDetected) - parseBudget(b.budget || b.issueDetected);
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -214,7 +216,39 @@ export default function Discovery() {
     };
   };
 
-  const uniquePlatforms = Array.from(new Set(jobs.map(j => j.platform)));
+  const getPlatformBadge = (platform: string, leadType: string) => {
+    switch (platform) {
+      case 'UPWORK':
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      case 'REMOTEOK':
+        return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+      case 'WEWORKREMOTELY':
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case 'HACKER_NEWS':
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'FIVERR PRO':
+        return 'bg-teal-500/10 text-teal-400 border-teal-500/20';
+      case 'GURU':
+        return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+      case 'PEOPLEPERHOUR':
+        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'X (TWITTER)':
+        return 'bg-neutral-800 text-neutral-300 border-neutral-700';
+      case 'REDDIT (r/forhire)':
+      case 'REDDIT (r/slavelabour)':
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'LINKEDIN':
+        return 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+      case 'WELLFOUND':
+        return 'bg-red-500/10 text-red-400 border-red-500/20';
+      default:
+        return leadType === 'LOCAL' 
+          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+          : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+    }
+  };
+
+  const uniquePlatforms = Array.from(new Set(jobs.map(j => j.platform))).filter(Boolean);
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -272,7 +306,26 @@ export default function Discovery() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 px-2">
+        <div className="flex flex-wrap items-center gap-2 px-2">
+          {/* Platform Filter */}
+          <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+            <Layers size={13} className="text-neutral-500" />
+            <select 
+              className="bg-transparent text-xs text-neutral-300 font-medium outline-none cursor-pointer hover:text-white"
+              value={selectedPlatform}
+              onChange={(e) => setSelectedPlatform(e.target.value)}
+            >
+              <option value="ALL" className="bg-[#121212]">All Platforms ({uniquePlatforms.length})</option>
+              {uniquePlatforms.map((plat) => (
+                <option key={plat} value={plat} className="bg-[#121212]">
+                  {plat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-px h-4 bg-white/[0.08]"></div>
+
           {/* Issue Filter */}
           <div className="flex items-center gap-1.5 text-xs text-neutral-400">
             <Filter size={13} className="text-neutral-500" />
@@ -331,11 +384,7 @@ export default function Discovery() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
-                        job.leadType === 'LOCAL' 
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
-                          : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                      }`}>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getPlatformBadge(job.platform, job.leadType)}`}>
                         {job.platform}
                       </span>
 
@@ -499,7 +548,7 @@ export default function Discovery() {
             <div>
               <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2">
-                  <span className={`premium-badge ${selectedJob.leadType === 'LOCAL' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
+                  <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded border ${getPlatformBadge(selectedJob.platform, selectedJob.leadType)}`}>
                     {selectedJob.platform}
                   </span>
                   <span className="text-xs text-gray-400 font-medium">
