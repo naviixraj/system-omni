@@ -9,6 +9,24 @@ export default function Pipeline() {
   const [pitches, setPitches] = useState<{ [key: string]: string }>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [mobileTab, setMobileTab] = useState<'QUEUED' | 'PITCHED' | 'WON'>('QUEUED');
+
+  const handleQuickMove = async (jobId: string, newStatus: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    setJobs((prev) => prev.map((job) => (job.id === jobId ? { ...job, status: newStatus } : job)));
+    try {
+      await fetch("/api/saved-jobs", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: jobId, status: newStatus }),
+      });
+    } catch (error) {
+      console.error("Failed to update status", error);
+    }
+  };
 
   useEffect(() => {
     fetch("/api/saved-jobs", { cache: "no-store" })
@@ -154,7 +172,7 @@ export default function Pipeline() {
 
     return (
       <div 
-        className="w-full md:w-[350px] flex-shrink-0 flex flex-col"
+        className={`w-full md:w-[350px] flex-shrink-0 flex-col ${statusKey === mobileTab ? 'flex' : 'hidden md:flex'}`}
         onDragOver={onDragOver}
         onDrop={(e) => onDrop(e, statusKey)}
       >
@@ -328,6 +346,37 @@ export default function Pipeline() {
                   })()}
                 </div>
               )}
+
+              {/* MOBILE TOUCH QUICK MOVE BUTTONS */}
+              <div className="md:hidden pt-2.5 mt-1 border-t border-white/[0.08] flex items-center justify-between gap-2">
+                <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Move Stage</span>
+                <div className="flex items-center gap-1.5">
+                  {job.status !== 'QUEUED' && (
+                    <button
+                      onClick={(e) => handleQuickMove(job.id, 'QUEUED', e)}
+                      className="text-[10px] font-medium px-2 py-1 bg-white/[0.04] active:bg-white/[0.1] text-neutral-300 rounded border border-white/[0.08]"
+                    >
+                      ← Queued
+                    </button>
+                  )}
+                  {job.status !== 'PITCHED' && (
+                    <button
+                      onClick={(e) => handleQuickMove(job.id, 'PITCHED', e)}
+                      className="text-[10px] font-medium px-2 py-1 bg-purple-500/10 active:bg-purple-500/20 text-purple-300 rounded border border-purple-500/20"
+                    >
+                      {job.status === 'QUEUED' ? 'Pitched →' : '← Pitched'}
+                    </button>
+                  )}
+                  {job.status !== 'WON' && (
+                    <button
+                      onClick={(e) => handleQuickMove(job.id, 'WON', e)}
+                      className="text-[10px] font-medium px-2 py-1 bg-emerald-500/10 active:bg-emerald-500/20 text-emerald-300 rounded border border-emerald-500/20"
+                    >
+                      Won 🏆
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -337,11 +386,34 @@ export default function Pipeline() {
 
   return (
     <div className="max-w-[1400px] mx-auto min-h-[calc(100vh-100px)] flex flex-col">
-      <div className="flex justify-between items-center mb-6 md:mb-8">
+      <div className="flex justify-between items-center mb-4 md:mb-8">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1 tracking-tight">CRM Pipeline</h1>
-          <p className="text-gray-500 text-xs md:text-sm">Drag and drop leads to track your progress.</p>
+          <h1 className="text-xl md:text-3xl font-extrabold text-white mb-1 tracking-tight">CRM Pipeline</h1>
+          <p className="text-gray-500 text-xs md:text-sm">Manage deals through each conversion stage.</p>
         </div>
+      </div>
+
+      {/* MOBILE SEGMENTED COLUMN SWITCHER */}
+      <div className="md:hidden flex items-center p-1 rounded-lg bg-[#0d0d0d] border border-white/[0.08] mb-4 gap-1">
+        {[
+          { key: 'QUEUED', label: 'Queued', count: jobs.filter(j => j.status === 'QUEUED').length, dot: 'bg-blue-500' },
+          { key: 'PITCHED', label: 'Pitched', count: jobs.filter(j => j.status === 'PITCHED').length, dot: 'bg-purple-500' },
+          { key: 'WON', label: 'Won Deals', count: jobs.filter(j => j.status === 'WON').length, dot: 'bg-emerald-500' },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setMobileTab(tab.key as any)}
+            className={`flex-1 py-2 px-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+              mobileTab === tab.key 
+                ? 'bg-white/[0.1] text-white border border-white/[0.1] shadow-sm' 
+                : 'text-neutral-400 hover:text-white'
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${tab.dot}`}></span>
+            <span>{tab.label}</span>
+            <span className="text-[10px] bg-white/[0.06] px-1 rounded font-mono">{tab.count}</span>
+          </button>
+        ))}
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-x-auto pb-4 custom-scrollbar">

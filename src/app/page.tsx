@@ -189,53 +189,53 @@ export default function Dashboard() {
       )}
 
       {/* KPI METRICS BAR (LINEAR STYLE) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="premium-panel p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-            <span>Total Leads</span>
-            <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">+12%</span>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
+            <span className="truncate">Total Leads</span>
+            <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">+12%</span>
           </div>
-          <div className="text-2xl font-semibold text-white tracking-tight">{stats.discovered}</div>
-          <div className="text-[11px] text-neutral-500 mt-1">Live database records</div>
+          <div className="text-xl sm:text-2xl font-semibold text-white tracking-tight">{stats.discovered}</div>
+          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Live database records</div>
         </div>
 
-        <div className="premium-panel p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-            <span>Active Pipeline</span>
-            <span className="text-[10px] text-blue-400 font-medium bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">Deals</span>
+        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
+            <span className="truncate">Pipeline</span>
+            <span className="text-[10px] text-blue-400 font-medium bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 shrink-0">Deals</span>
           </div>
-          <div className="text-2xl font-semibold text-white tracking-tight">{stats.active}</div>
-          <div className="text-[11px] text-neutral-500 mt-1">Saved to CRM pipeline</div>
+          <div className="text-xl sm:text-2xl font-semibold text-white tracking-tight">{stats.active}</div>
+          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Saved to CRM pipeline</div>
         </div>
 
-        <div className="premium-panel p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-            <span>Pitches Dispatched</span>
-            <span className="text-[10px] text-purple-400 font-medium bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">AI</span>
+        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
+            <span className="truncate">AI Pitches</span>
+            <span className="text-[10px] text-purple-400 font-medium bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20 shrink-0">AI</span>
           </div>
-          <div className="text-2xl font-semibold text-white tracking-tight">{stats.pitched}</div>
-          <div className="text-[11px] text-neutral-500 mt-1">Outreach generated</div>
+          <div className="text-xl sm:text-2xl font-semibold text-white tracking-tight">{stats.pitched}</div>
+          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Outreach generated</div>
         </div>
 
-        <div className="premium-panel p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-            <span>Scraper Engine</span>
-            <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">Online</span>
+        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
+            <span className="truncate">Scraper</span>
+            <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">Online</span>
           </div>
-          <div className="text-2xl font-semibold text-white tracking-tight">Active</div>
-          <div className="text-[11px] text-neutral-500 mt-1">Scanning Maps & OSM</div>
+          <div className="text-xl sm:text-2xl font-semibold text-white tracking-tight">Active</div>
+          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Scanning 16+ Platforms</div>
         </div>
       </div>
 
       {/* RECENT LEADS SPLIT LIST (LINEAR DATA-DENSE VIEW) */}
       <div className="premium-panel overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-white/[0.08] flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="px-3.5 sm:px-5 py-3 sm:py-3.5 border-b border-white/[0.08] flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <Clock size={14} className="text-neutral-400" />
             <h2 className="text-xs font-semibold text-neutral-200 tracking-wider uppercase">Incoming Real-Time Leads</h2>
           </div>
           <Link href="/discovery" className="text-xs text-neutral-400 hover:text-white flex items-center gap-1 transition-colors">
-            View All Leads <ArrowRight size={13} />
+            View All <ArrowRight size={13} />
           </Link>
         </div>
 
@@ -246,14 +246,14 @@ export default function Dashboard() {
         ) : (
           <div className="divide-y divide-white/[0.06]">
             {recentProjects.map((project) => (
-              <div key={project.id} className="px-5 py-3.5 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
-                <div className="flex items-center gap-3.5">
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getPlatformBadge(project.platform, project.leadType)}`}>
+              <div key={project.id} className="px-3.5 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
+                <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border shrink-0 ${getPlatformBadge(project.platform, project.leadType)}`}>
                     {project.platform}
                   </span>
-                  <div>
-                    <h3 className="text-xs font-medium text-neutral-100">{project.title}</h3>
-                    <p className="text-[11px] text-neutral-500 mt-0.5">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xs font-medium text-neutral-100 truncate">{project.title}</h3>
+                    <p className="text-[11px] text-neutral-500 mt-0.5 truncate">
                       {project.leadType === 'LOCAL' 
                         ? `Issue: ${project.issueDetected?.replace(/_/g, ' ') || 'None'} • ${project.district || 'Local'}` 
                         : 'Global Freelance Lead'}
@@ -261,11 +261,11 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-medium text-neutral-300">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <span className="text-[11px] sm:text-xs font-mono font-medium text-neutral-300 whitespace-nowrap">
                     {project.leadType === 'LOCAL' ? 'High Target' : project.budget}
                   </span>
-                  <Link href="/discovery" className="p-1.5 text-neutral-500 hover:text-neutral-200 hover:bg-white/[0.05] rounded transition-colors">
+                  <Link href="/discovery" className="p-1.5 text-neutral-500 hover:text-neutral-200 hover:bg-white/[0.05] rounded transition-colors" title="View details in discovery">
                     <ArrowRight size={14} />
                   </Link>
                 </div>

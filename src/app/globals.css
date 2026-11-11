@@ -92,3 +92,21 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255,255,255,0.2);
 }
+
+/* Mobile optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Touch momentum scroll for iOS */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+}

@@ -378,8 +378,8 @@ export default function Discovery() {
       )}
 
       {/* SEGMENTED FILTER ROW (LINEAR STYLE) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-1.5 rounded-lg bg-[#0d0d0d] border border-white/[0.08]">
-        <div className="flex items-center gap-1">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-1.5 rounded-lg bg-[#0d0d0d] border border-white/[0.08]">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
           {[
             { id: "ALL", label: "All Leads", count: jobs.length },
             { id: "GLOBAL", label: "Freelance Projects", count: jobs.filter(j => j.leadType === "GLOBAL").length },
@@ -388,7 +388,7 @@ export default function Discovery() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-2 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-2 shrink-0 ${
                 activeTab === tab.id 
                   ? "bg-white/[0.1] text-white border border-white/[0.1]" 
                   : "text-neutral-400 hover:text-neutral-200 border border-transparent"
@@ -402,12 +402,12 @@ export default function Discovery() {
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 px-2">
+        <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2.5 px-1 py-1 border-t lg:border-t-0 border-white/[0.06]">
           {/* Platform Filter */}
-          <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-            <Layers size={13} className="text-neutral-500" />
+          <div className="flex items-center gap-1.5 text-xs text-neutral-400 bg-white/[0.03] px-2 py-1 rounded border border-white/[0.06]">
+            <Layers size={13} className="text-neutral-500 shrink-0" />
             <select 
-              className="bg-transparent text-xs text-neutral-300 font-medium outline-none cursor-pointer hover:text-white"
+              className="bg-transparent text-xs text-neutral-300 font-medium outline-none cursor-pointer hover:text-white max-w-[130px] sm:max-w-none truncate"
               value={selectedPlatform}
               onChange={(e) => setSelectedPlatform(e.target.value)}
             >
@@ -420,37 +420,33 @@ export default function Discovery() {
             </select>
           </div>
 
-          <div className="w-px h-4 bg-white/[0.08]"></div>
-
           {/* Issue Filter */}
-          <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-            <Filter size={13} className="text-neutral-500" />
+          <div className="flex items-center gap-1.5 text-xs text-neutral-400 bg-white/[0.03] px-2 py-1 rounded border border-white/[0.06]">
+            <Filter size={13} className="text-neutral-500 shrink-0" />
             <select 
-              className="bg-transparent text-xs text-neutral-300 font-medium outline-none cursor-pointer hover:text-white"
+              className="bg-transparent text-xs text-neutral-300 font-medium outline-none cursor-pointer hover:text-white max-w-[110px] sm:max-w-none truncate"
               value={issueFilter}
               onChange={(e) => setIssueFilter(e.target.value)}
             >
               <option value="ALL" className="bg-[#121212]">All Issues</option>
               <option value="ERROR" className="bg-[#121212]">Broken/Error</option>
               <option value="SLOW_LOAD" className="bg-[#121212]">Slow Load</option>
-              <option value="NOT_MOBILE_FRIENDLY" className="bg-[#121212]">Not Mobile Friendly</option>
+              <option value="NOT_MOBILE_FRIENDLY" className="bg-[#121212]">Not Mobile</option>
               <option value="NO_WEBSITE" className="bg-[#121212]">No Website</option>
             </select>
           </div>
 
-          <div className="w-px h-4 bg-white/[0.08]"></div>
-
           {/* Sort Filter */}
-          <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-            <ArrowUpDown size={13} className="text-neutral-500" />
+          <div className="flex items-center gap-1.5 text-xs text-neutral-400 bg-white/[0.03] px-2 py-1 rounded border border-white/[0.06]">
+            <ArrowUpDown size={13} className="text-neutral-500 shrink-0" />
             <select 
-              className="bg-transparent text-xs text-neutral-300 font-medium outline-none cursor-pointer hover:text-white"
+              className="bg-transparent text-xs text-neutral-300 font-medium outline-none cursor-pointer hover:text-white max-w-[100px] sm:max-w-none truncate"
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
             >
               <option value="NEWEST" className="bg-[#121212]">Newest</option>
-              <option value="BUDGET_DESC" className="bg-[#121212]">Budget: High to Low</option>
-              <option value="BUDGET_ASC" className="bg-[#121212]">Budget: Low to High</option>
+              <option value="BUDGET_DESC" className="bg-[#121212]">Budget: High</option>
+              <option value="BUDGET_ASC" className="bg-[#121212]">Budget: Low</option>
             </select>
           </div>
         </div>
@@ -628,11 +624,11 @@ export default function Discovery() {
       {/* DETAILED JOB OVERLAY MODAL */}
       {selectedJob && (
         <div 
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md animate-in fade-in duration-200 flex items-center justify-center p-3 sm:p-6 custom-scrollbar" 
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200 flex items-end sm:items-center justify-center p-0 sm:p-6 custom-scrollbar touch-scroll" 
           onClick={() => setSelectedJob(null)}
         >
           <div 
-            className="w-full max-w-3xl bg-[#0e0e11] border border-white/[0.09] rounded-2xl p-5 sm:p-7 relative flex flex-col gap-5 sm:gap-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] my-auto overflow-hidden" 
+            className="w-full max-w-3xl bg-[#0e0e11] border border-white/[0.09] rounded-t-2xl sm:rounded-2xl p-4 sm:p-7 relative flex flex-col gap-4 sm:gap-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] max-h-[92vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar my-0 sm:my-auto" 
             onClick={(e) => e.stopPropagation()}
           >
             {/* Ambient Background Glow Accent */}

@@ -1,41 +1,78 @@
-
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Activity, LayoutDashboard, Database, Settings, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Compass, Layers, Settings, Menu, X, CheckCircle2, Shield } from 'lucide-react';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const links = [
-    { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/discovery', label: 'Global Discovery', icon: Activity },
-    { href: '/pipeline', label: 'CRM Pipeline', icon: Database },
+    { href: '/', label: 'Dashboard', shortLabel: 'Overview', icon: LayoutDashboard },
+    { href: '/discovery', label: 'Global Discovery', shortLabel: 'Discovery', icon: Compass },
+    { href: '/pipeline', label: 'CRM Pipeline', shortLabel: 'Pipeline', icon: Layers },
   ];
 
   return (
     <>
-      {/* MOBILE TOP NAVIGATION BAR */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#050505]/90 backdrop-blur-lg border-b border-white/[0.05] px-4 flex items-center justify-between z-40">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] border border-blue-400/30">
-            <span className="text-white font-bold text-sm tracking-wider">OS</span>
+      {/* MOBILE TOP APP BAR */}
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[#080808]/90 backdrop-blur-md border-b border-white/[0.08] px-4 flex items-center justify-between z-40">
+        <div className="flex items-center gap-2.5">
+          <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center shadow-sm">
+            <span className="text-black font-extrabold text-[11px] tracking-tight">OS</span>
           </div>
-          <h1 className="text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400 tracking-widest">OMNI-SYSTEM</h1>
+          <span className="text-xs font-bold text-white tracking-wider uppercase">Omni-System</span>
+          <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 ml-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Live
+          </span>
         </div>
+        
         <button 
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 text-gray-400 hover:text-white bg-white/5 rounded-lg border border-white/10"
+          className="p-2 text-neutral-400 hover:text-white bg-white/[0.04] active:bg-white/[0.08] rounded-md border border-white/[0.08]"
           aria-label="Toggle Navigation Menu"
         >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          {mobileOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
-      </div>
+      </header>
 
-      {/* MOBILE DRAWER OVERLAY */}
+      {/* MOBILE BOTTOM NAVIGATION BAR (FIXED FOR THUMB NAVIGATION) */}
+      <nav 
+        className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/[0.08] flex items-center justify-around z-40 px-3 pb-[env(safe-area-inset-bottom)]"
+        aria-label="Mobile Navigation"
+      >
+        {links.map((link) => {
+          const isActive = pathname === link.href;
+          const Icon = link.icon;
+          
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-lg transition-all ${
+                isActive 
+                  ? 'text-white' 
+                  : 'text-neutral-500 active:text-neutral-300'
+              }`}
+            >
+              <div className={`p-1 rounded-md transition-colors ${
+                isActive ? 'bg-white/[0.1] text-blue-400' : ''
+              }`}>
+                <Icon size={18} />
+              </div>
+              <span className={`text-[10px] tracking-tight font-medium ${
+                isActive ? 'text-white font-semibold' : 'text-neutral-400'
+              }`}>
+                {link.shortLabel}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* MOBILE DRAWER BACKDROP */}
       {mobileOpen && (
         <div 
           className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-40 transition-opacity"
@@ -43,11 +80,12 @@ export default function Sidebar() {
         />
       )}
 
-      {/* SIDEBAR CONTAINER (DESKTOP & MOBILE DRAWER) */}
+      {/* DESKTOP SIDEBAR & MOBILE DRAWER */}
       <aside className={`
         fixed md:static top-0 left-0 h-screen w-60 flex-shrink-0 bg-[#080808] border-r border-white/[0.08] p-4 flex flex-col z-50 select-none transition-transform duration-200 ease-out
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
+        {/* SIDEBAR LOGO */}
         <div className="flex items-center justify-between mb-8 px-2 pt-2 md:pt-1">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center">
@@ -57,7 +95,7 @@ export default function Sidebar() {
           </div>
           <button 
             onClick={() => setMobileOpen(false)}
-            className="md:hidden p-1 text-neutral-400 hover:text-white"
+            className="md:hidden p-1.5 text-neutral-400 hover:text-white"
           >
             <X size={16} />
           </button>
@@ -67,6 +105,7 @@ export default function Sidebar() {
           <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Workspace</span>
         </div>
 
+        {/* NAVIGATION LINKS */}
         <nav className="flex-1 space-y-1">
           {links.map((link) => {
             const isActive = pathname === link.href;
@@ -93,16 +132,18 @@ export default function Sidebar() {
           })}
         </nav>
         
-        <div className="pt-4 border-t border-white/[0.08] space-y-1">
+        {/* FOOTER WIDGET */}
+        <div className="pt-4 border-t border-white/[0.08] space-y-2">
           <div className="px-3 py-2 rounded-md bg-white/[0.02] border border-white/[0.06] flex items-center justify-between">
-            <span className="text-[11px] text-neutral-400">Scraper Status</span>
+            <span className="text-[11px] text-neutral-400">Scraper Watchdog</span>
             <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active
             </span>
           </div>
-          <button className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.03] rounded-md transition-colors w-full border border-transparent">
-            <Settings size={15} /> Settings
-          </button>
+          <div className="px-3 py-1.5 text-[10px] text-neutral-500 flex items-center gap-1.5">
+            <Shield size={12} className="text-neutral-400" />
+            <span>Mobile Optimized v2.4</span>
+          </div>
         </div>
       </aside>
     </>
