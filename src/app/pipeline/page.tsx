@@ -11,7 +11,7 @@ export default function Pipeline() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/saved-jobs")
+    fetch("/api/saved-jobs", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -166,9 +166,9 @@ export default function Pipeline() {
           <span className="text-[10px] font-mono font-medium text-neutral-400 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.06]">{columnJobs.length}</span>
         </div>
 
-        <div className={`flex-1 p-2 rounded-lg bg-[#0a0a0a] border border-white/[0.06] overflow-y-auto space-y-2.5 min-h-[500px] ${columnJobs.length === 0 ? 'border-dashed' : ''}`}>
+        <div className={`flex-1 p-2 rounded-lg bg-[#0a0a0a] border border-white/[0.06] overflow-y-auto space-y-2.5 min-h-[500px] flex flex-col ${columnJobs.length === 0 ? 'border-dashed' : ''}`}>
           {columnJobs.length === 0 && (
-            <div className="h-32 flex items-center justify-center text-[11px] text-neutral-500">
+            <div className="flex-1 flex items-center justify-center text-center p-6 text-[12px] text-neutral-500">
               {emptyText}
             </div>
           )}
@@ -330,12 +330,6 @@ export default function Pipeline() {
               )}
             </div>
           ))}
-          
-          {columnJobs.length === 0 && (
-            <div className="h-full min-h-32 flex items-center justify-center text-center p-6 text-gray-600 text-xs font-medium">
-              {emptyText}
-            </div>
-          )}
         </div>
       </div>
     );
