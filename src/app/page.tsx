@@ -36,8 +36,39 @@ export default function Dashboard() {
           setRecentProjects(data.slice(0, 4)); // Get the 4 absolute newest projects
         }
       })
-      .catch(() => {});
   }, []);
+
+  const getPlatformBadge = (platform: string, leadType: string) => {
+    switch (platform) {
+      case 'UPWORK':
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      case 'REMOTEOK':
+        return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+      case 'WEWORKREMOTELY':
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case 'HACKER_NEWS':
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'FIVERR PRO':
+        return 'bg-teal-500/10 text-teal-400 border-teal-500/20';
+      case 'GURU':
+        return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+      case 'PEOPLEPERHOUR':
+        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'X (TWITTER)':
+        return 'bg-neutral-800 text-neutral-300 border-neutral-700';
+      case 'REDDIT (r/forhire)':
+      case 'REDDIT (r/slavelabour)':
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'LINKEDIN':
+        return 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+      case 'WELLFOUND':
+        return 'bg-red-500/10 text-red-400 border-red-500/20';
+      default:
+        return leadType === 'LOCAL' 
+          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+          : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+    }
+  };
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -121,11 +152,7 @@ export default function Dashboard() {
             {recentProjects.map((project) => (
               <div key={project.id} className="px-5 py-3.5 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                 <div className="flex items-center gap-3.5">
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
-                    project.leadType === 'LOCAL' 
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
-                      : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                  }`}>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getPlatformBadge(project.platform, project.leadType)}`}>
                     {project.platform}
                   </span>
                   <div>
