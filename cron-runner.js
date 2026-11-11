@@ -14,10 +14,10 @@ function triggerCron() {
   }
 
   isScanning = true;
-  const stamp = new Date().toLocaleTimeString();
-  console.log(`[${stamp}] Firing Omni-Cron API (http://127.0.0.1:3000/api/cron)...`);
+  const port = process.env.PORT || 3000;
+  console.log(`[${stamp}] Firing Omni-Cron API (http://127.0.0.1:${port}/api/cron)...`);
 
-  const req = http.get('http://127.0.0.1:3000/api/cron', (res) => {
+  const req = http.get(`http://127.0.0.1:${port}/api/cron`, (res) => {
     let rawData = '';
     res.on('data', (chunk) => { rawData += chunk; });
     res.on('end', () => {
