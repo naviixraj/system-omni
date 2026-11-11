@@ -47,7 +47,7 @@ export async function DELETE(req: Request) {
     
     if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
-    await prisma.lead.delete({
+    await prisma.lead.deleteMany({
       where: { id }
     });
     

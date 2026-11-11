@@ -58,37 +58,48 @@ export default function Pipeline() {
     }
   };
 
-  const handleUnsave = async (jobId: string) => {
+  const handleUnsave = async (jobId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     setDeletingId(jobId);
+    setJobs((prev) => prev.filter((job) => job.id !== jobId));
     try {
       await fetch("/api/saved-jobs", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: jobId, status: 'SAVED' }),
       });
-      setJobs((prev) => prev.filter((job) => job.id !== jobId));
     } catch (error) {
       console.error("Failed to return job to discovery", error);
     }
     setDeletingId(null);
   };
 
-  const handleDeletePermanently = async (jobId: string) => {
+  const handleDeletePermanently = async (jobId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     setDeletingId(jobId);
+    // Optimistic UI update: instantly remove from screen
+    setJobs((prev) => prev.filter((job) => job.id !== jobId));
     try {
-      const res = await fetch(`/api/saved-jobs?id=${jobId}`, {
+      await fetch(`/api/saved-jobs?id=${jobId}`, {
         method: "DELETE",
       });
-      if (res.ok) {
-        setJobs((prev) => prev.filter((job) => job.id !== jobId));
-      }
     } catch (error) {
       console.error("Failed to delete job permanently", error);
     }
     setDeletingId(null);
   };
 
-  const handleGeneratePitch = async (job: any) => {
+  const handleGeneratePitch = async (job: any, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     setGeneratingFor(job.id);
     try {
       const res = await fetch("/api/generate-pitch", {
@@ -97,7 +108,9 @@ export default function Pipeline() {
         body: JSON.stringify(job),
       });
       const data = await res.json();
-      setPitches((prev) => ({ ...prev, [job.id]: data.pitch }));
+      if (data && data.pitch) {
+        setPitches((prev) => ({ ...prev, [job.id]: data.pitch }));
+      }
     } catch (error) {
       console.error("Failed to generate pitch", error);
     }
@@ -232,7 +245,7 @@ export default function Pipeline() {
                     </a>
                   )}
                   <button
-                    onClick={() => handleUnsave(job.id)}
+                    onClick={(e) => handleUnsave(job.id, e)}
                     disabled={deletingId === job.id}
                     className="p-1 text-neutral-400 hover:text-blue-400 hover:bg-white/[0.06] rounded transition-colors"
                     title="Return to Discovery Feed"
@@ -241,12 +254,12 @@ export default function Pipeline() {
                   </button>
 
                   <button
-                    onClick={() => handleDeletePermanently(job.id)}
+                    onClick={(e) => handleDeletePermanently(job.id, e)}
                     disabled={deletingId === job.id}
-                    className="text-gray-500 hover:text-red-400 transition"
+                    className="p-1 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
                     title="Delete permanently from database"
                   >
-                    <Trash2 size={14} />
+                    {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
                   </button>
                 </div>
               </div>
@@ -265,14 +278,14 @@ export default function Pipeline() {
               
               {!pitches[job.id] ? (
                 <button 
-                  onClick={() => handleGeneratePitch(job)}
+                  onClick={(e) => handleGeneratePitch(job, e)}
                   disabled={generatingFor === job.id}
-                  className="w-full flex items-center justify-center gap-2 bg-[#222] hover:bg-[#2a2a2a] disabled:opacity-50 text-gray-300 py-2 rounded-lg text-xs font-semibold transition border border-white/5"
+                  className="w-full flex items-center justify-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/20 disabled:opacity-50 text-neutral-200 py-2 rounded-lg text-xs font-medium transition-all border border-white/[0.08] shadow-sm"
                 >
                   {generatingFor === job.id ? (
-                    <><Loader2 size={13} className="animate-spin text-blue-400" /> Analyzing...</>
+                    <><Loader2 size={13} className="animate-spin text-violet-400" /> Generating AI Pitch...</>
                   ) : (
-                    <><Sparkles size={13} className="text-pink-400" /> Generate AI Pitch</>
+                    <><Sparkles size={13} className="text-violet-400" /> Generate AI Pitch</>
                   )}
                 </button>
               ) : (
