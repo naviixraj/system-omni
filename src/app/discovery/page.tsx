@@ -817,82 +817,80 @@ export default function Discovery() {
 
             {/* STICKY TOP HEADER: PULL HANDLE, BADGES, ACTIONS & TITLE */}
             <div className="shrink-0 p-4 sm:p-6 border-b border-white/[0.08] bg-[#0e0e11]/95 backdrop-blur-md relative z-10 flex flex-col gap-2.5">
+              {/* Pinned Top-Right Close Button */}
+              <button 
+                onClick={() => setSelectedJob(null)}
+                className="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 w-8 h-8 rounded-full bg-white/[0.08] hover:bg-white/[0.15] active:bg-white/[0.22] border border-white/[0.12] text-neutral-300 hover:text-white flex items-center justify-center transition-all z-30 cursor-pointer shadow-md active:scale-95"
+                title="Close modal"
+              >
+                <X size={16} />
+              </button>
+
               {/* iOS/Android Bottom Sheet Pull Handle Indicator */}
               <div className="w-12 h-1.5 rounded-full bg-white/20 mx-auto -mt-1 mb-1 sm:hidden shrink-0" />
 
               {/* Top Navigation & Action Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-white/[0.06] relative z-10">
-              {/* Left: Platform & Metadata Badges */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md border flex items-center gap-1.5 ${getPlatformBadge(selectedJob.platform, selectedJob.leadType)}`}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
-                  {selectedJob.platform}
-                </span>
-
-                {selectedJob.issueDetected && (
-                  <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border flex items-center gap-1.5 ${
-                    selectedJob.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                    selectedJob.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
-                    selectedJob.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                    'bg-neutral-800 text-neutral-400 border-neutral-700'
-                  }`}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                    {selectedJob.issueDetected.replace(/_/g, ' ')}
+              <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-white/[0.06] relative z-10 pr-9 sm:pr-10">
+                {/* Left: Platform & Metadata Badges */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md border flex items-center gap-1.5 ${getPlatformBadge(selectedJob.platform, selectedJob.leadType)}`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
+                    {selectedJob.platform}
                   </span>
-                )}
 
-                <span className="text-xs text-neutral-400 flex items-center gap-1">
-                  <MapPin size={12} className="text-neutral-500" />
-                  {selectedJob.leadType === 'LOCAL' ? (selectedJob.district || 'Local Business') : 'Global Remote Lead'}
-                </span>
+                  {selectedJob.issueDetected && (
+                    <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border flex items-center gap-1.5 ${
+                      selectedJob.issueDetected === 'ERROR' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                      selectedJob.issueDetected === 'SLOW_LOAD' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                      selectedJob.issueDetected === 'NOT_MOBILE_FRIENDLY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                      'bg-neutral-800 text-neutral-400 border-neutral-700'
+                    }`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                      {selectedJob.issueDetected.replace(/_/g, ' ')}
+                    </span>
+                  )}
+
+                  <span className="text-xs text-neutral-400 flex items-center gap-1">
+                    <MapPin size={12} className="text-neutral-500" />
+                    {selectedJob.leadType === 'LOCAL' ? (selectedJob.district || 'Local Business') : 'Global Remote Lead'}
+                  </span>
+                </div>
+
+                {/* Right: Actions Toolbar (Call, Email, Delete) */}
+                <div className="flex items-center gap-2">
+                  {/* Call Button */}
+                  <a
+                    href={resolveLeadContact(selectedJob).callUrl}
+                    target={resolveLeadContact(selectedJob).phone ? "_self" : "_blank"}
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 text-emerald-400 text-xs font-medium rounded-lg border border-emerald-500/20 flex items-center gap-1.5 transition-colors"
+                    title={resolveLeadContact(selectedJob).phone ? `Call ${resolveLeadContact(selectedJob).phone}` : `Look up phone for ${selectedJob.title}`}
+                  >
+                    <Phone size={12} />
+                    <span>Call</span>
+                  </a>
+
+                  {/* Email Button */}
+                  <a
+                    href={`mailto:${resolveLeadContact(selectedJob).email}?subject=${encodeURIComponent(`Website Upgrade for ${selectedJob.title}`)}&body=${encodeURIComponent(`Hi ${selectedJob.title} Team,\n\nI reviewed your online presence in ${selectedJob.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
+                    className="px-2.5 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 text-blue-400 text-xs font-medium rounded-lg border border-blue-500/20 flex items-center gap-1.5 transition-colors"
+                    title={`Send email to ${resolveLeadContact(selectedJob).email}`}
+                  >
+                    <Mail size={12} />
+                    <span>Email</span>
+                  </a>
+
+                  {/* Dismiss / Delete Lead Button */}
+                  <button 
+                    onClick={(e) => deleteJob(selectedJob.id, e)} 
+                    disabled={deletingId === selectedJob.id}
+                    className="p-1.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-white/[0.06] transition-colors cursor-pointer"
+                    title="Dismiss / Delete Lead"
+                  >
+                    {deletingId === selectedJob.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
+                  </button>
+                </div>
               </div>
-
-              {/* Right: Actions Toolbar & Dedicated Close Button */}
-              <div className="flex items-center gap-2">
-                {/* Call Button */}
-                <a
-                  href={resolveLeadContact(selectedJob).callUrl}
-                  target={resolveLeadContact(selectedJob).phone ? "_self" : "_blank"}
-                  rel="noopener noreferrer"
-                  className="px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg border border-emerald-500/20 flex items-center gap-1.5 transition-colors"
-                  title={resolveLeadContact(selectedJob).phone ? `Call ${resolveLeadContact(selectedJob).phone}` : `Look up phone for ${selectedJob.title}`}
-                >
-                  <Phone size={12} />
-                  <span className="hidden sm:inline">Call</span>
-                </a>
-
-                {/* Email Button */}
-                <a
-                  href={`mailto:${resolveLeadContact(selectedJob).email}?subject=${encodeURIComponent(`Website Upgrade for ${selectedJob.title}`)}&body=${encodeURIComponent(`Hi ${selectedJob.title} Team,\n\nI reviewed your online presence in ${selectedJob.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
-                  className="px-2.5 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-medium rounded-lg border border-blue-500/20 flex items-center gap-1.5 transition-colors"
-                  title={`Send email to ${resolveLeadContact(selectedJob).email}`}
-                >
-                  <Mail size={12} />
-                  <span className="hidden sm:inline">Email</span>
-                </a>
-
-                {/* Dismiss / Delete Lead Button */}
-                <button 
-                  onClick={(e) => deleteJob(selectedJob.id, e)} 
-                  disabled={deletingId === selectedJob.id}
-                  className="p-1.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-white/[0.06] transition-colors"
-                  title="Dismiss / Delete Lead"
-                >
-                  {deletingId === selectedJob.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
-                </button>
-
-                <div className="w-px h-4 bg-white/[0.08]" />
-
-                {/* Close Modal Button */}
-                <button 
-                  onClick={() => setSelectedJob(null)}
-                  className="p-1.5 text-neutral-400 hover:text-white hover:bg-white/[0.08] rounded-lg border border-white/[0.06] transition-colors"
-                  title="Close Modal"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            </div>
 
             {/* Title & Official Link Bar */}
             <div className="flex flex-col gap-2 relative z-10">
