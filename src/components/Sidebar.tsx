@@ -18,33 +18,39 @@ export default function Sidebar() {
   return (
     <>
       {/* MOBILE TOP APP BAR */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[#08080a]/85 backdrop-blur-xl border-b border-white/[0.08] px-4 flex items-center justify-between z-40">
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[#08080a]/90 backdrop-blur-2xl border-b border-white/[0.08] px-4 flex items-center justify-between z-40 select-none">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-white to-neutral-200 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.15)]">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-white to-neutral-200 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.15)] shrink-0">
             <span className="text-black font-extrabold text-[12px] tracking-tight">OS</span>
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-white tracking-wider uppercase">Omni-System</span>
-              <span className="flex items-center gap-1 text-[9px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-white tracking-wider uppercase">Omni-System</span>
+            <span className="text-neutral-600 text-xs">/</span>
+            <span className="text-[11px] font-semibold text-blue-400">
+              {pathname === '/' ? 'Dashboard' : pathname === '/discovery' ? 'Discovery' : 'Pipeline'}
+            </span>
           </div>
         </div>
         
-        <button 
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 text-neutral-400 hover:text-white bg-white/[0.04] active:bg-white/[0.1] active:scale-95 rounded-lg border border-white/[0.08] transition-all"
-          aria-label="Toggle Navigation Menu"
-        >
-          {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Live</span>
+          </span>
+
+          <button 
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="w-10 h-10 flex items-center justify-center text-neutral-400 hover:text-white active:text-white bg-white/[0.04] active:bg-white/[0.1] active:scale-95 rounded-lg border border-white/[0.08] transition-all"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </header>
 
       {/* MOBILE BOTTOM NAVIGATION BAR (FIXED FOR THUMB NAVIGATION) */}
       <nav 
-        className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#09090b]/90 backdrop-blur-2xl border-t border-white/[0.1] flex items-center justify-around z-40 px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_35px_rgba(0,0,0,0.8)]"
+        className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#09090b]/95 backdrop-blur-2xl border-t border-white/[0.1] flex items-center justify-around z-40 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-10px_35px_rgba(0,0,0,0.8)] select-none"
         aria-label="Mobile Navigation"
       >
         {links.map((link) => {
@@ -55,24 +61,24 @@ export default function Sidebar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex-1 py-1 flex flex-col items-center justify-center gap-1 rounded-xl transition-all active:scale-90 duration-150 ${
+              className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center gap-1 rounded-xl transition-all active:scale-95 duration-150 ${
                 isActive 
                   ? 'text-white' 
-                  : 'text-neutral-500 active:text-neutral-300'
+                  : 'text-neutral-400 active:text-neutral-200'
               }`}
             >
-              <div className={`relative px-3 py-1 rounded-full transition-all duration-200 ${
+              <div className={`relative px-3.5 py-1 rounded-full transition-all duration-200 ${
                 isActive 
-                  ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30 shadow-[0_0_12px_rgba(59,130,246,0.3)]' 
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40 shadow-[0_0_14px_rgba(59,130,246,0.35)]' 
                   : 'text-neutral-400'
               }`}>
-                <Icon size={18} className="transition-transform" />
+                <Icon size={19} className="transition-transform" />
                 {isActive && (
                   <span className="absolute -top-0.5 right-1 w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" />
                 )}
               </div>
               <span className={`text-[10px] tracking-tight transition-colors ${
-                isActive ? 'text-white font-semibold' : 'text-neutral-400 font-medium'
+                isActive ? 'text-white font-bold' : 'text-neutral-400 font-medium'
               }`}>
                 {link.shortLabel}
               </span>
@@ -104,9 +110,10 @@ export default function Sidebar() {
           </div>
           <button 
             onClick={() => setMobileOpen(false)}
-            className="md:hidden p-1.5 text-neutral-400 hover:text-white"
+            className="md:hidden w-10 h-10 flex items-center justify-center text-neutral-400 hover:text-white rounded-lg hover:bg-white/[0.05]"
+            aria-label="Close Navigation Menu"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone, Smartphone, Gauge, Archive, MapPin, ExternalLink, Layers, Sparkles, Copy, Check, RotateCw } from "lucide-react";
+import { Loader2, Save, Globe2, Search, Filter, ArrowUpDown, X, Zap, Target, CheckCircle2, XCircle, AlertTriangle, Activity, Trash2, Mail, Phone, Smartphone, Gauge, Archive, MapPin, ExternalLink, Layers, Sparkles, Copy, Check, RotateCw, SlidersHorizontal } from "lucide-react";
 
 export default function Discovery() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -15,6 +15,7 @@ export default function Discovery() {
   const [searchQuery, setSearchQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copiedPrice, setCopiedPrice] = useState(false);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   const [isScanning, setIsScanning] = useState(false);
   const [scanStatus, setScanStatus] = useState<{ type: 'success' | 'error' | 'partial'; message: string } | null>(null);
@@ -289,40 +290,41 @@ export default function Discovery() {
   };
 
   const uniquePlatforms = Array.from(new Set(jobs.map(j => j.platform))).filter(Boolean);
+  const activeFilterCount = (selectedPlatform !== "ALL" ? 1 : 0) + (issueFilter !== "ALL" ? 1 : 0) + (sortOrder !== "NEWEST" ? 1 : 0);
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6">
+    <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-6">
       {/* HEADER & SEARCH */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/[0.08]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-white/[0.08]">
         <div>
-          <div className="flex items-center gap-2 text-xs text-neutral-500 mb-1">
+          <div className="flex items-center gap-2 text-xs text-neutral-500 mb-0.5 sm:mb-1">
             <span>Workspace</span>
             <span>/</span>
             <span className="text-neutral-300">Discovery</span>
           </div>
-          <h1 className="text-xl font-semibold text-white tracking-tight">Leads & Global Opportunities</h1>
+          <h1 className="text-lg sm:text-xl font-semibold text-white tracking-tight">Leads & Global Opportunities</h1>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={triggerLeadScan}
             disabled={isScanning}
-            className="px-3 py-1.5 rounded-md text-xs font-medium bg-white/[0.06] hover:bg-white/[0.1] text-neutral-200 border border-white/[0.1] hover:border-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md text-xs font-semibold sm:font-medium bg-white/[0.06] hover:bg-white/[0.1] active:bg-white/[0.14] text-neutral-200 border border-white/[0.1] hover:border-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm min-h-[44px] sm:min-h-0"
             title="Scan 16+ global platforms and local maps for new orders"
           >
             {isScanning ? (
               <>
-                <Loader2 size={13} className="animate-spin text-amber-400" />
+                <Loader2 size={14} className="animate-spin text-amber-400" />
                 <span>Checking Orders...</span>
               </>
             ) : (
               <>
-                <RotateCw size={13} className="text-emerald-400" />
+                <RotateCw size={14} className="text-emerald-400" />
                 <span>Check for New Orders</span>
               </>
             )}
           </button>
 
-          <div className="flex items-center px-3 py-1.5 gap-2 rounded-md bg-[#121212] border border-white/[0.08] focus-within:border-white/20 transition-all w-full sm:w-72">
+          <div className="flex items-center px-3.5 py-2.5 sm:py-1.5 gap-2 rounded-xl sm:rounded-md bg-[#121212] border border-white/[0.08] focus-within:border-white/20 transition-all w-full sm:w-72 min-h-[44px] sm:min-h-0">
             <Search size={14} className="text-neutral-500 shrink-0" />
             <input 
               type="text" 
@@ -332,7 +334,7 @@ export default function Discovery() {
               className="bg-transparent border-none outline-none text-xs text-neutral-200 placeholder-neutral-500 w-full"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery("")} className="text-neutral-500 hover:text-white">
+              <button onClick={() => setSearchQuery("")} className="text-neutral-500 hover:text-white p-1">
                 <X size={13} />
               </button>
             )}
@@ -377,32 +379,51 @@ export default function Discovery() {
         </div>
       )}
 
-      {/* SEGMENTED FILTER ROW (LINEAR STYLE) */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-1.5 rounded-lg bg-[#0d0d0d] border border-white/[0.08]">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
-          {[
-            { id: "ALL", label: "All Leads", count: jobs.length },
-            { id: "GLOBAL", label: "Freelance Projects", count: jobs.filter(j => j.leadType === "GLOBAL").length },
-            { id: "LOCAL", label: "Local Businesses", count: jobs.filter(j => j.leadType === "LOCAL").length }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-2 shrink-0 ${
-                activeTab === tab.id 
-                  ? "bg-white/[0.1] text-white border border-white/[0.1]" 
-                  : "text-neutral-400 hover:text-neutral-200 border border-transparent"
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded ${activeTab === tab.id ? "bg-white/[0.1] text-neutral-300" : "bg-white/[0.04] text-neutral-500"}`}>
-                {tab.count}
+      {/* SEGMENTED FILTER ROW */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5 p-1.5 rounded-xl bg-[#0d0d0d] border border-white/[0.08]">
+        {/* Segmented Pills & Mobile Filters Trigger */}
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 flex-1 min-w-0">
+            {[
+              { id: "ALL", label: "All Leads", count: jobs.length },
+              { id: "GLOBAL", label: "Freelance", count: jobs.filter(j => j.leadType === "GLOBAL").length },
+              { id: "LOCAL", label: "Local", count: jobs.filter(j => j.leadType === "LOCAL").length }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-md text-xs font-semibold sm:font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 sm:gap-2 shrink-0 min-h-[38px] sm:min-h-0 ${
+                  activeTab === tab.id 
+                    ? "bg-white/[0.12] text-white border border-white/[0.15] shadow-sm" 
+                    : "text-neutral-400 hover:text-neutral-200 border border-transparent"
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${activeTab === tab.id ? "bg-white/[0.15] text-neutral-200" : "bg-white/[0.04] text-neutral-500"}`}>
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Mobile Filters Modal Trigger */}
+          <button
+            onClick={() => setIsFilterSheetOpen(true)}
+            className="sm:hidden px-3 py-2 rounded-lg text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.1] active:bg-white/[0.15] active:scale-95 border border-white/[0.1] text-neutral-200 flex items-center gap-1.5 shrink-0 transition-all min-h-[38px]"
+            title="Open Mobile Filter Drawer"
+          >
+            <SlidersHorizontal size={13} className={activeFilterCount > 0 ? "text-blue-400" : "text-neutral-400"} />
+            <span>Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] font-mono flex items-center justify-center">
+                {activeFilterCount}
               </span>
-            </button>
-          ))}
+            )}
+          </button>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2.5 px-1 py-1 border-t lg:border-t-0 border-white/[0.06]">
+        {/* Desktop Filter Row (Preserved for Tablet & Desktop) */}
+        <div className="hidden sm:flex flex-wrap items-center justify-between sm:justify-start gap-2.5 px-1 py-1 border-t lg:border-t-0 border-white/[0.06]">
           {/* Platform Filter */}
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 bg-white/[0.03] px-2 py-1 rounded border border-white/[0.06]">
             <Layers size={13} className="text-neutral-500 shrink-0" />
@@ -520,8 +541,8 @@ export default function Discovery() {
                       {job.leadType === 'LOCAL' ? 'High Target' : job.budget}
                     </span>
 
-                    <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-start">
-                      <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+                      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                         {/* Go to Website Globe Button */}
                         {(job.url || job.leadType === 'LOCAL') && (
                           <a
@@ -533,10 +554,10 @@ export default function Discovery() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="p-2 sm:p-1.5 text-neutral-400 hover:text-white active:bg-white/[0.1] rounded-lg sm:rounded border border-white/[0.06] transition-colors"
+                            className="w-9 h-9 sm:w-auto sm:h-auto p-2 sm:p-1.5 flex items-center justify-center text-neutral-400 hover:text-white active:bg-white/[0.1] rounded-lg sm:rounded border border-white/[0.08] transition-colors shrink-0"
                             title={job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE' ? `Visit ${job.url}` : `Search ${job.title} on Google`}
                           >
-                            <Globe2 size={14} />
+                            <Globe2 size={15} />
                           </a>
                         )}
 
@@ -547,10 +568,10 @@ export default function Discovery() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="p-2 sm:p-1.5 text-purple-400 hover:text-purple-300 active:bg-purple-500/20 rounded-lg sm:rounded border border-purple-500/20 transition-colors"
+                            className="w-9 h-9 sm:w-auto sm:h-auto p-2 sm:p-1.5 flex items-center justify-center text-purple-400 hover:text-purple-300 active:bg-purple-500/20 rounded-lg sm:rounded border border-purple-500/20 transition-colors shrink-0"
                             title="Run Mobile UX Audit on Google PageSpeed"
                           >
-                            <Smartphone size={14} />
+                            <Smartphone size={15} />
                           </a>
                         )}
 
@@ -561,10 +582,10 @@ export default function Discovery() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="p-2 sm:p-1.5 text-amber-400 hover:text-amber-300 active:bg-amber-500/20 rounded-lg sm:rounded border border-amber-500/20 transition-colors"
+                            className="w-9 h-9 sm:w-auto sm:h-auto p-2 sm:p-1.5 flex items-center justify-center text-amber-400 hover:text-amber-300 active:bg-amber-500/20 rounded-lg sm:rounded border border-amber-500/20 transition-colors shrink-0"
                             title="Run PageSpeed Performance Audit"
                           >
-                            <Gauge size={14} />
+                            <Gauge size={15} />
                           </a>
                         )}
 
@@ -575,10 +596,10 @@ export default function Discovery() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="p-2 sm:p-1.5 text-red-400 hover:text-red-300 active:bg-red-500/20 rounded-lg sm:rounded border border-red-500/20 transition-colors"
+                            className="w-9 h-9 sm:w-auto sm:h-auto p-2 sm:p-1.5 flex items-center justify-center text-red-400 hover:text-red-300 active:bg-red-500/20 rounded-lg sm:rounded border border-red-500/20 transition-colors shrink-0"
                             title="View Cached Archive on Wayback Machine"
                           >
-                            <Archive size={14} />
+                            <Archive size={15} />
                           </a>
                         )}
 
@@ -588,37 +609,37 @@ export default function Discovery() {
                           target={phone ? "_self" : "_blank"}
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="p-2 sm:p-1.5 text-emerald-400 hover:text-emerald-300 active:bg-emerald-500/20 rounded-lg sm:rounded border border-emerald-500/20 transition-colors"
+                          className="w-9 h-9 sm:w-auto sm:h-auto p-2 sm:p-1.5 flex items-center justify-center text-emerald-400 hover:text-emerald-300 active:bg-emerald-500/20 rounded-lg sm:rounded border border-emerald-500/20 transition-colors shrink-0"
                           title={phone ? `Call ${phone}` : `Find Phone / Call ${job.title}`}
                         >
-                          <Phone size={14} />
+                          <Phone size={15} />
                         </a>
 
                         {/* Quick Mail outreach */}
                         <a
                           href={`mailto:${email}?subject=${encodeURIComponent(`Website Upgrade for ${job.title}`)}&body=${encodeURIComponent(`Hi ${job.title} Team,\n\nI reviewed your online presence in ${job.district || "your area"} and noticed some high-impact areas where we can increase customer conversions.\n\nLet me know if you would be open to a quick 5-minute chat.`)}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="p-2 sm:p-1.5 text-blue-400 hover:text-blue-300 active:bg-blue-500/20 rounded-lg sm:rounded border border-blue-500/20 transition-colors"
+                          className="w-9 h-9 sm:w-auto sm:h-auto p-2 sm:p-1.5 flex items-center justify-center text-blue-400 hover:text-blue-300 active:bg-blue-500/20 rounded-lg sm:rounded border border-blue-500/20 transition-colors shrink-0"
                           title={`Send Email to ${email}`}
                         >
-                          <Mail size={14} />
+                          <Mail size={15} />
                         </a>
 
                         {/* Dismiss / Delete Lead Button */}
                         <button 
                           onClick={(e) => deleteJob(job.id, e)} 
                           disabled={deletingId === job.id}
-                          className="p-2 sm:p-1.5 text-neutral-500 hover:text-red-400 active:bg-red-500/20 rounded-lg sm:rounded transition-colors"
+                          className="w-9 h-9 sm:w-auto sm:h-auto p-2 sm:p-1.5 flex items-center justify-center text-neutral-500 hover:text-red-400 active:bg-red-500/20 rounded-lg sm:rounded transition-colors shrink-0"
                           title="Dismiss / Delete Lead"
                         >
-                          {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={14} />}
+                          {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={15} />}
                         </button>
                       </div>
 
                       {/* Move to Pipeline Button */}
                       <button 
                         onClick={(e) => saveJob(job, e)} 
-                        className="px-3 py-1.5 sm:py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-lg sm:rounded border border-blue-500/30 flex items-center gap-1.5 transition-all shadow-sm"
+                        className="h-9 sm:h-auto px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-lg border border-blue-500/30 flex items-center gap-1.5 transition-all shadow-sm shrink-0"
                       >
                         <Save size={13} /> Pipeline
                       </button>
@@ -627,6 +648,156 @@ export default function Discovery() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE FILTER & SORT BOTTOM SHEET */}
+      {isFilterSheetOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col justify-end sm:hidden overscroll-none animate-in fade-in duration-150"
+          onClick={() => setIsFilterSheetOpen(false)}
+        >
+          <div 
+            className="w-full bg-[#0e0e12] border-t border-white/[0.12] rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Sheet Handle */}
+            <div className="pt-3 pb-1 shrink-0 flex justify-center">
+              <div className="w-12 h-1.5 rounded-full bg-white/20" />
+            </div>
+
+            {/* Sheet Header */}
+            <div className="p-4 border-b border-white/[0.08] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal size={16} className="text-blue-400" />
+                <h3 className="text-sm font-semibold text-white tracking-tight">Filter & Sort Leads</h3>
+                {activeFilterCount > 0 && (
+                  <span className="text-[10px] font-mono bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/30">
+                    {activeFilterCount} active
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={() => {
+                      setSelectedPlatform("ALL");
+                      setIssueFilter("ALL");
+                      setSortOrder("NEWEST");
+                    }}
+                    className="text-xs text-neutral-400 hover:text-white underline cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                )}
+                <button 
+                  onClick={() => setIsFilterSheetOpen(false)}
+                  className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/[0.08]"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Filter Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+              {/* Sort By Section */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <ArrowUpDown size={12} className="text-neutral-400" /> Sort By
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "NEWEST", label: "Newest" },
+                    { id: "BUDGET_DESC", label: "Budget: High" },
+                    { id: "BUDGET_ASC", label: "Budget: Low" }
+                  ].map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setSortOrder(s.id)}
+                      className={`py-2 px-2.5 rounded-lg text-xs font-medium border text-center transition-all cursor-pointer ${
+                        sortOrder === s.id
+                          ? "bg-blue-600/20 border-blue-500/40 text-blue-200"
+                          : "bg-white/[0.03] border-white/[0.08] text-neutral-300 hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Platform Filter Section */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers size={12} className="text-neutral-400" /> Platform ({uniquePlatforms.length + 1})
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    onClick={() => setSelectedPlatform("ALL")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                      selectedPlatform === "ALL"
+                        ? "bg-blue-600/20 border-blue-500/40 text-blue-200"
+                        : "bg-white/[0.03] border-white/[0.08] text-neutral-300 hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    All Platforms
+                  </button>
+                  {uniquePlatforms.map((plat) => (
+                    <button
+                      key={plat}
+                      onClick={() => setSelectedPlatform(plat)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                        selectedPlatform === plat
+                          ? "bg-blue-600/20 border-blue-500/40 text-blue-200"
+                          : "bg-white/[0.03] border-white/[0.08] text-neutral-300 hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      {plat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Website Issues Section */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Filter size={12} className="text-neutral-400" /> Website Issues
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { id: "ALL", label: "All Issues" },
+                    { id: "ERROR", label: "Broken / Error 500" },
+                    { id: "SLOW_LOAD", label: "Slow Load Speed" },
+                    { id: "NOT_MOBILE_FRIENDLY", label: "Not Mobile Friendly" },
+                    { id: "NO_WEBSITE", label: "No Website Found" }
+                  ].map((issue) => (
+                    <button
+                      key={issue.id}
+                      onClick={() => setIssueFilter(issue.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                        issueFilter === issue.id
+                          ? "bg-blue-600/20 border-blue-500/40 text-blue-200"
+                          : "bg-white/[0.03] border-white/[0.08] text-neutral-300 hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      {issue.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Apply Action */}
+            <div className="p-4 border-t border-white/[0.08] bg-[#09090b] shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <button
+                onClick={() => setIsFilterSheetOpen(false)}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white font-semibold text-xs rounded-xl shadow-lg transition-all cursor-pointer"
+              >
+                Show Results ({filteredJobs.length})
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -9,10 +9,13 @@ export default function Dashboard() {
     active: 0,
     discovered: 0,
     pitched: 0,
+    won: 0,
   });
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [scanStatus, setScanStatus] = useState<{ type: 'success' | 'error' | 'partial'; message: string } | null>(null);
+  const [lastSyncTime, setLastSyncTime] = useState<string>("Live");
+  const [dbConnected, setDbConnected] = useState<boolean>(true);
 
   const loadData = () => {
     // Fetch pipeline stats
@@ -23,11 +26,15 @@ export default function Dashboard() {
           setStats((prev) => ({
             ...prev,
             active: data.length,
-            pitched: data.filter((j: any) => j.status === 'PITCHED' || j.status === 'WON').length,
+            pitched: data.filter((j: any) => j.status === 'PITCHED').length,
+            won: data.filter((j: any) => j.status === 'WON').length,
           }));
+          setDbConnected(true);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setDbConnected(false);
+      });
 
     // Fetch live feed for stats and recent projects
     fetch("/api/live-jobs", { cache: "no-store" })
@@ -35,10 +42,14 @@ export default function Dashboard() {
       .then((data) => {
         if (Array.isArray(data)) {
           setStats((prev) => ({ ...prev, discovered: data.length }));
-          setRecentProjects(data.slice(0, 4)); // Get the 4 absolute newest projects
+          setRecentProjects(data.slice(0, 6)); // Display top 6 newest projects
+          setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+          setDbConnected(true);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setDbConnected(false);
+      });
   };
 
   const triggerScan = async () => {
@@ -115,9 +126,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6">
-      {/* HEADER BREADCRUMB & ACTIONS */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3.5 pb-4 border-b border-white/[0.08]">
+    <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-6">
+      {/* SECTION 1: HEADER & PRIMARY MOBILE COMMAND BAR */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 sm:pb-4 border-b border-white/[0.08]">
         <div>
           <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-500 mb-1">
             <span>Workspace</span>
@@ -126,27 +137,30 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center justify-between w-full sm:w-auto">
             <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">System Command Center</h1>
-            <span className="sm:hidden flex items-center gap-1 text-[9px] text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Auto-Sync 15s
-            </span>
+            <div className="sm:hidden flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Sync {lastSyncTime}</span>
+            </div>
           </div>
+          <p className="text-xs text-neutral-400 mt-0.5 sm:mt-1 hidden sm:block">Autonomous client acquisition and live deal intelligence</p>
         </div>
 
+        {/* PRIMARY ACTION CONTROLS */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <button
             onClick={triggerScan}
             disabled={isScanning}
-            className="w-full sm:w-auto px-4 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.12] active:bg-white/[0.18] active:scale-[0.98] text-neutral-100 border border-white/[0.12] hover:border-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm min-h-[42px] sm:min-h-0"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.12] active:bg-white/[0.18] active:scale-[0.98] text-neutral-100 border border-white/[0.12] hover:border-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm min-h-[44px] sm:min-h-0"
             title="Trigger instant live orders check across all platforms"
           >
             {isScanning ? (
               <>
-                <Loader2 size={14} className="animate-spin text-amber-400" />
-                <span>Checking 16+ Platforms...</span>
+                <Loader2 size={15} className="animate-spin text-amber-400" />
+                <span>Scanning 16+ Platforms...</span>
               </>
             ) : (
               <>
-                <RotateCw size={14} className="text-emerald-400" />
+                <RotateCw size={15} className="text-emerald-400" />
                 <span>Check Orders Now</span>
               </>
             )}
@@ -155,23 +169,23 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
             <Link 
               href="/discovery" 
-              className="premium-button text-xs flex items-center justify-center gap-2 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md active:scale-[0.98] min-h-[42px] sm:min-h-0 text-center font-medium"
+              className="premium-button text-xs flex items-center justify-center gap-2 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md active:scale-[0.98] min-h-[44px] sm:min-h-0 text-center font-medium"
             >
-              <Globe2 size={14} className="text-blue-400 shrink-0" /> 
+              <Globe2 size={15} className="text-blue-400 shrink-0" /> 
               <span>Discovery</span>
             </Link>
             <Link 
               href="/pipeline" 
-              className="premium-button-primary text-xs flex items-center justify-center gap-2 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md active:scale-[0.98] min-h-[42px] sm:min-h-0 text-center font-medium"
+              className="premium-button-primary text-xs flex items-center justify-center gap-2 py-2.5 sm:py-1.5 rounded-xl sm:rounded-md active:scale-[0.98] min-h-[44px] sm:min-h-0 text-center font-medium"
             >
-              <Target size={14} className="shrink-0" /> 
+              <Target size={15} className="shrink-0" /> 
               <span>Pipeline</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* SCAN STATUS FEEDBACK */}
+      {/* SCAN STATUS FEEDBACK TOAST/BANNER */}
       {scanStatus && (
         <div className={`p-3 rounded-xl border text-xs flex items-center justify-between transition-all ${
           scanStatus.type === 'error' 
@@ -192,80 +206,109 @@ export default function Dashboard() {
             {scanStatus.type === 'error' && (
               <button 
                 onClick={triggerScan} 
-                className="text-[11px] underline hover:text-white px-2 py-0.5"
+                className="text-[11px] underline hover:text-white px-2 py-1 min-h-[36px] flex items-center"
               >
                 Retry
               </button>
             )}
             <button 
               onClick={() => setScanStatus(null)} 
-              className="p-1 hover:bg-white/10 rounded text-neutral-400 hover:text-white"
+              className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded text-neutral-400 hover:text-white"
+              aria-label="Dismiss message"
             >
-              <X size={13} />
+              <X size={14} />
             </button>
           </div>
         </div>
       )}
 
-      {/* KPI METRICS BAR (LINEAR STYLE) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-        <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between rounded-xl active:scale-[0.98] transition-transform">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
-            <span className="truncate flex items-center gap-1.5">
-              <Globe2 size={13} className="text-emerald-400" />
-              Total Leads
-            </span>
-            <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">+12%</span>
-          </div>
-          <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">{stats.discovered}</div>
-          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Live database records</div>
+      {/* SECTION 2: SYSTEM HEALTH & INTEGRATION STATUS STRIP */}
+      <div className="px-3.5 py-2.5 rounded-xl bg-[#0c0c0e] border border-white/[0.06] flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-neutral-400 font-medium">System Health:</span>
+          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+            dbConnected 
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${dbConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            {dbConnected ? 'Cloud DB Connected' : 'Local Fallback'}
+          </span>
         </div>
 
+        <div className="flex items-center gap-2.5 text-[11px] text-neutral-400 font-mono">
+          <span className="hidden sm:inline">Scraper: Online (16+ Platforms)</span>
+          <span className="text-neutral-600 hidden sm:inline">•</span>
+          <span className="text-neutral-400">Polling: 15s</span>
+        </div>
+      </div>
+
+      {/* SECTION 3: KEY PERFORMANCE INDICATORS (2-COL MOBILE / 4-COL DESKTOP) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        {/* Metric 1: Total Discovered */}
         <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between rounded-xl active:scale-[0.98] transition-transform">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
-            <span className="truncate flex items-center gap-1.5">
-              <Target size={13} className="text-blue-400" />
+          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5">
+            <span className="truncate flex items-center gap-1.5 font-medium">
+              <Globe2 size={13} className="text-emerald-400 shrink-0" />
+              Total Leads
+            </span>
+            <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">Live</span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{stats.discovered}</div>
+          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Total scanned opportunities</div>
+        </div>
+
+        {/* Metric 2: Pipeline Opportunities */}
+        <Link href="/pipeline" className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between rounded-xl active:scale-[0.98] transition-transform block">
+          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5">
+            <span className="truncate flex items-center gap-1.5 font-medium">
+              <Target size={13} className="text-blue-400 shrink-0" />
               Pipeline
             </span>
             <span className="text-[10px] text-blue-400 font-medium bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 shrink-0">Deals</span>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">{stats.active}</div>
-          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Saved to CRM pipeline</div>
-        </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{stats.active}</div>
+          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Active in CRM pipeline</div>
+        </Link>
 
+        {/* Metric 3: AI Pitches */}
         <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between rounded-xl active:scale-[0.98] transition-transform">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
-            <span className="truncate flex items-center gap-1.5">
-              <Sparkles size={13} className="text-purple-400" />
+          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5">
+            <span className="truncate flex items-center gap-1.5 font-medium">
+              <Sparkles size={13} className="text-purple-400 shrink-0" />
               AI Pitches
             </span>
             <span className="text-[10px] text-purple-400 font-medium bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20 shrink-0">AI</span>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">{stats.pitched}</div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{stats.pitched}</div>
           <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Outreach generated</div>
         </div>
 
+        {/* Metric 4: Won Deals */}
         <div className="premium-panel p-3.5 sm:p-4 flex flex-col justify-between rounded-xl active:scale-[0.98] transition-transform">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5 sm:mb-2">
-            <span className="truncate flex items-center gap-1.5">
-              <RotateCw size={13} className="text-emerald-400" />
-              Scraper
+          <div className="flex items-center justify-between text-neutral-400 text-xs mb-1.5">
+            <span className="truncate flex items-center gap-1.5 font-medium">
+              <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
+              Won Deals
             </span>
-            <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">Online</span>
+            <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">🏆 Closed</span>
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-white tracking-tight">Active</div>
-          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Scanning 16+ Platforms</div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{stats.won}</div>
+          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-1 truncate">Clients successfully won</div>
         </div>
       </div>
 
-      {/* RECENT LEADS SPLIT LIST (LINEAR DATA-DENSE VIEW) */}
+      {/* SECTION 4: INCOMING REAL-TIME LEADS (MOBILE TOUCH CARDS) */}
       <div className="premium-panel overflow-hidden rounded-xl">
         <div className="px-3.5 sm:px-5 py-3 sm:py-3.5 border-b border-white/[0.08] flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-2.5">
-            <Clock size={14} className="text-neutral-400" />
+            <Clock size={15} className="text-neutral-400" />
             <h2 className="text-xs font-semibold text-neutral-200 tracking-wider uppercase">Incoming Real-Time Leads</h2>
+            <span className="text-[10px] bg-white/[0.06] text-neutral-400 px-1.5 py-0.2 rounded font-mono">
+              {recentProjects.length}
+            </span>
           </div>
-          <Link href="/discovery" className="text-xs text-neutral-400 hover:text-white flex items-center gap-1 transition-colors">
+          <Link href="/discovery" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors font-medium min-h-[36px]">
             View All <ArrowRight size={13} />
           </Link>
         </div>
@@ -280,29 +323,29 @@ export default function Dashboard() {
               <Link 
                 key={project.id} 
                 href="/discovery"
-                className="px-3.5 sm:px-5 py-3.5 sm:py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3 hover:bg-white/[0.03] active:bg-white/[0.06] transition-colors group block"
+                className="p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 hover:bg-white/[0.03] active:bg-white/[0.06] transition-colors group block"
               >
                 <div className="flex items-start sm:items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1 w-full">
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border shrink-0 mt-0.5 sm:mt-0 ${getPlatformBadge(project.platform, project.leadType)}`}>
                     {project.platform}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-xs sm:text-xs font-medium text-neutral-100 group-hover:text-white line-clamp-1">
+                    <h3 className="text-xs sm:text-xs font-semibold text-neutral-100 group-hover:text-white line-clamp-2 sm:line-clamp-1 leading-snug">
                       {project.title}
                     </h3>
-                    <p className="text-[11px] text-neutral-500 mt-0.5 truncate">
+                    <p className="text-[11px] text-neutral-500 mt-1 truncate">
                       {project.leadType === 'LOCAL' 
-                        ? `Issue: ${project.issueDetected?.replace(/_/g, ' ') || 'None'} • ${project.district || 'Local'}` 
-                        : 'Global Freelance Lead'}
+                        ? `Issue: ${project.issueDetected?.replace(/_/g, ' ') || 'None'} • ${project.district || 'Local Business'}` 
+                        : 'Global Freelance Project'}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto pt-1 sm:pt-0 border-t border-white/[0.03] sm:border-none">
-                  <span className="text-[11px] sm:text-xs font-mono font-medium text-emerald-400/90 sm:text-neutral-300">
+                <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t border-white/[0.03] sm:border-none">
+                  <span className="text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                     {project.leadType === 'LOCAL' ? 'High Target' : project.budget}
                   </span>
-                  <div className="p-1 text-neutral-500 group-hover:text-neutral-200 transition-colors">
+                  <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.02] text-neutral-400 group-hover:text-white group-hover:bg-white/[0.08] transition-colors">
                     <ArrowRight size={14} />
                   </div>
                 </div>

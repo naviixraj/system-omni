@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, Loader2, Copy, Check, RotateCcw, Globe2, Trash2, Mail, Smartphone, Gauge, Archive } from "lucide-react";
+import Link from "next/link";
+import { Sparkles, Loader2, Copy, Check, RotateCcw, Globe2, Trash2, Mail, Smartphone, Gauge, Archive, ArrowRight } from "lucide-react";
 
 export default function Pipeline() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -184,10 +185,19 @@ export default function Pipeline() {
           <span className="text-[10px] font-mono font-medium text-neutral-400 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.06]">{columnJobs.length}</span>
         </div>
 
-        <div className={`flex-1 p-2 rounded-lg bg-[#0a0a0a] border border-white/[0.06] overflow-y-auto space-y-2.5 min-h-[500px] flex flex-col ${columnJobs.length === 0 ? 'border-dashed' : ''}`}>
+        <div className={`flex-1 p-2 rounded-xl bg-[#0a0a0a] border border-white/[0.06] overflow-y-auto space-y-3 min-h-[500px] flex flex-col ${columnJobs.length === 0 ? 'border-dashed' : ''}`}>
           {columnJobs.length === 0 && (
-            <div className="flex-1 flex items-center justify-center text-center p-6 text-[12px] text-neutral-500">
-              {emptyText}
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-[12px] text-neutral-400 gap-3">
+              <p>{emptyText}</p>
+              {statusKey === 'QUEUED' && (
+                <Link
+                  href="/discovery"
+                  className="px-3.5 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all"
+                >
+                  <span>Explore Discovery</span>
+                  <ArrowRight size={13} />
+                </Link>
+              )}
             </div>
           )}
 
@@ -196,7 +206,7 @@ export default function Pipeline() {
               key={job.id} 
               draggable
               onDragStart={(e) => onDragStart(e, job.id)}
-              className="bg-[#121212] border border-white/[0.08] hover:border-white/20 p-3.5 rounded-lg cursor-grab active:cursor-grabbing transition-colors flex flex-col gap-2.5 shadow-none"
+              className="bg-[#121214] border border-white/[0.08] hover:border-white/20 p-3.5 sm:p-4 rounded-xl cursor-grab active:cursor-grabbing transition-colors flex flex-col gap-3 shadow-sm"
             >
               <div className="flex justify-between items-start">
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getPlatformBadge(job.platform, job.leadType)}`}>
@@ -213,14 +223,14 @@ export default function Pipeline() {
                       } 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="p-1 text-neutral-400 hover:text-white hover:bg-white/[0.06] rounded transition-colors"
+                      className="w-8 h-8 sm:w-auto sm:h-auto p-1.5 sm:p-1 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.08] active:bg-white/[0.15] rounded-lg sm:rounded border border-white/[0.08] transition-colors"
                       title={
                         job.url && job.url.trim() !== '' && job.issueDetected !== 'NO_WEBSITE'
                           ? 'Go to Website'
                           : 'Search Business on Google'
                       }
                     >
-                      <Globe2 size={13} />
+                      <Globe2 size={14} />
                     </a>
                   )}
 
@@ -230,10 +240,10 @@ export default function Pipeline() {
                       href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded transition-colors"
+                      className="w-8 h-8 sm:w-auto sm:h-auto p-1.5 sm:p-1 flex items-center justify-center text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 rounded-lg sm:rounded border border-purple-500/20 transition-colors"
                       title="Run Mobile UX Audit on Google PageSpeed"
                     >
-                      <Smartphone size={13} />
+                      <Smartphone size={14} />
                     </a>
                   )}
 
@@ -243,10 +253,10 @@ export default function Pipeline() {
                       href={`https://pagespeed.web.dev/analysis?url=${encodeURIComponent(job.url)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded transition-colors"
+                      className="w-8 h-8 sm:w-auto sm:h-auto p-1.5 sm:p-1 flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-amber-500/20 rounded-lg sm:rounded border border-amber-500/20 transition-colors"
                       title="Run PageSpeed Performance Audit"
                     >
-                      <Gauge size={13} />
+                      <Gauge size={14} />
                     </a>
                   )}
 
@@ -256,68 +266,69 @@ export default function Pipeline() {
                       href={`https://web.archive.org/web/*/${job.url}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                      className="w-8 h-8 sm:w-auto sm:h-auto p-1.5 sm:p-1 flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg sm:rounded border border-red-500/20 transition-colors"
                       title="View Cached Archive on Wayback Machine"
                     >
-                      <Archive size={13} />
+                      <Archive size={14} />
                     </a>
                   )}
                   <button
                     onClick={(e) => handleUnsave(job.id, e)}
                     disabled={deletingId === job.id}
-                    className="p-1 text-neutral-400 hover:text-blue-400 hover:bg-white/[0.06] rounded transition-colors"
+                    className="w-8 h-8 sm:w-auto sm:h-auto p-1.5 sm:p-1 flex items-center justify-center text-neutral-400 hover:text-blue-400 hover:bg-white/[0.08] active:bg-white/[0.15] rounded-lg sm:rounded border border-white/[0.08] transition-colors cursor-pointer"
                     title="Return to Discovery Feed"
                   >
-                    {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-blue-400" /> : <RotateCcw size={13} />}
+                    {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-blue-400" /> : <RotateCcw size={14} />}
                   </button>
 
                   <button
                     onClick={(e) => handleDeletePermanently(job.id, e)}
                     disabled={deletingId === job.id}
-                    className="p-1 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                    className="w-8 h-8 sm:w-auto sm:h-auto p-1.5 sm:p-1 flex items-center justify-center text-neutral-400 hover:text-red-400 hover:bg-red-500/20 rounded-lg sm:rounded border border-white/[0.08] transition-colors cursor-pointer"
                     title="Delete permanently from database"
                   >
-                    {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={13} />}
+                    {deletingId === job.id ? <Loader2 size={13} className="animate-spin text-red-400" /> : <Trash2 size={14} />}
                   </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-bold text-sm text-gray-200 leading-tight">{job.title}</h4>
+              
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold text-sm text-neutral-100 leading-snug">{job.title}</h4>
                 {job.url && job.url !== '' && job.issueDetected !== 'NO_WEBSITE' && (
-                  <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-400 transition" title="Visit Official Website">
-                    <Globe2 size={14} />
+                  <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-neutral-500 hover:text-blue-400 transition" title="Visit Official Website">
+                    <Globe2 size={13} />
                   </a>
                 )}
               </div>
               
-              <p className="text-gray-400 font-medium text-[11px] mb-4">
-                {job.leadType === 'LOCAL' ? 'High Priority Local Lead' : job.budget}
+              <p className="text-neutral-400 font-mono text-[11px] -mt-1">
+                {job.leadType === 'LOCAL' ? 'High Priority Local Lead' : (job.budget || 'Open Scope')}
               </p>
               
               {!pitches[job.id] ? (
                 <button 
                   onClick={(e) => handleGeneratePitch(job, e)}
                   disabled={generatingFor === job.id}
-                  className="w-full flex items-center justify-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/20 disabled:opacity-50 text-neutral-200 py-2 rounded-lg text-xs font-medium transition-all border border-white/[0.08] shadow-sm"
+                  className="w-full min-h-[44px] flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600/15 to-blue-600/15 hover:from-violet-600/25 hover:to-blue-600/25 active:scale-[0.98] disabled:opacity-50 text-neutral-100 py-2.5 rounded-xl text-xs font-semibold transition-all border border-violet-500/30 shadow-sm cursor-pointer"
                 >
                   {generatingFor === job.id ? (
-                    <><Loader2 size={13} className="animate-spin text-violet-400" /> Generating AI Pitch...</>
+                    <><Loader2 size={14} className="animate-spin text-violet-400" /> Generating AI Pitch...</>
                   ) : (
-                    <><Sparkles size={13} className="text-violet-400" /> Generate AI Pitch</>
+                    <><Sparkles size={14} className="text-violet-400" /> Generate AI Pitch</>
                   )}
                 </button>
               ) : (
-                <div className="mt-1 space-y-2">
+                <div className="space-y-2">
                   <div className="relative group/pitch">
-                    <div className="text-[11px] text-gray-400 bg-[#121212] p-3 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto custom-scrollbar">
+                    <div className="text-[11px] text-neutral-300 bg-[#0d0d10] p-3 rounded-xl border border-white/[0.08] whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto custom-scrollbar">
                       {pitches[job.id]}
                     </div>
                     <button 
                       onClick={() => copyToClipboard(job.id, pitches[job.id])}
-                      className="absolute top-1.5 right-1.5 p-1.5 bg-[#222] hover:bg-[#333] rounded-md transition text-gray-400 hover:text-white border border-white/5"
+                      className="absolute top-2 right-2 p-1.5 bg-neutral-800/90 hover:bg-neutral-700 rounded-lg transition text-neutral-300 hover:text-white border border-white/10"
                       title="Copy pitch to clipboard"
                     >
-                      {copiedId === job.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                      {copiedId === job.id ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
                     </button>
                   </div>
 
@@ -337,10 +348,10 @@ export default function Pipeline() {
                     return (
                       <a
                         href={`mailto:${targetEmail}?subject=${encodeURIComponent(`Partnership / Web Proposal: ${job.title}`)}&body=${encodeURIComponent(pitches[job.id])}`}
-                        className="w-full py-1.5 px-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
+                        className="w-full min-h-[44px] py-2.5 px-3 bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white border border-blue-400/30 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-md transition-all"
                         title={`Send pitch to ${targetEmail}`}
                       >
-                        <Mail size={13} /> Send Email ({targetEmail})
+                        <Mail size={14} /> Send Email ({targetEmail})
                       </a>
                     );
                   })()}
@@ -348,13 +359,13 @@ export default function Pipeline() {
               )}
 
               {/* MOBILE TOUCH QUICK MOVE BUTTONS */}
-              <div className="md:hidden pt-2.5 mt-1 border-t border-white/[0.08] flex items-center justify-between gap-2">
+              <div className="md:hidden pt-3 mt-1 border-t border-white/[0.08] flex items-center justify-between gap-2">
                 <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Move Stage</span>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {job.status !== 'QUEUED' && (
                     <button
                       onClick={(e) => handleQuickMove(job.id, 'QUEUED', e)}
-                      className="text-xs font-medium px-2.5 py-1.5 bg-white/[0.06] active:bg-white/[0.15] active:scale-95 text-neutral-200 rounded-lg border border-white/[0.1] transition-all"
+                      className="min-h-[38px] text-xs font-semibold px-3 py-1.5 bg-white/[0.06] active:bg-white/[0.15] active:scale-95 text-neutral-200 rounded-xl border border-white/[0.1] transition-all cursor-pointer"
                     >
                       ← Queued
                     </button>
@@ -362,7 +373,7 @@ export default function Pipeline() {
                   {job.status !== 'PITCHED' && (
                     <button
                       onClick={(e) => handleQuickMove(job.id, 'PITCHED', e)}
-                      className="text-xs font-medium px-2.5 py-1.5 bg-purple-500/15 active:bg-purple-500/30 active:scale-95 text-purple-300 rounded-lg border border-purple-500/30 transition-all"
+                      className="min-h-[38px] text-xs font-semibold px-3 py-1.5 bg-purple-500/20 active:bg-purple-500/30 active:scale-95 text-purple-200 rounded-xl border border-purple-500/30 transition-all cursor-pointer"
                     >
                       {job.status === 'QUEUED' ? 'Pitched →' : '← Pitched'}
                     </button>
@@ -370,7 +381,7 @@ export default function Pipeline() {
                   {job.status !== 'WON' && (
                     <button
                       onClick={(e) => handleQuickMove(job.id, 'WON', e)}
-                      className="text-xs font-medium px-2.5 py-1.5 bg-emerald-500/15 active:bg-emerald-500/30 active:scale-95 text-emerald-300 rounded-lg border border-emerald-500/30 transition-all"
+                      className="min-h-[38px] text-xs font-semibold px-3 py-1.5 bg-emerald-500/20 active:bg-emerald-500/30 active:scale-95 text-emerald-200 rounded-xl border border-emerald-500/30 transition-all cursor-pointer"
                     >
                       Won 🏆
                     </button>
@@ -385,16 +396,38 @@ export default function Pipeline() {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto min-h-[calc(100vh-100px)] flex flex-col">
-      <div className="flex justify-between items-center mb-3 sm:mb-6">
+    <div className="max-w-[1400px] mx-auto min-h-[calc(100vh-100px)] flex flex-col space-y-4">
+      {/* HEADER */}
+      <div className="flex justify-between items-center pb-3 border-b border-white/[0.08]">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">CRM Pipeline</h1>
-          <p className="text-neutral-500 text-xs">Manage deals through each conversion stage.</p>
+          <div className="flex items-center gap-2 text-xs text-neutral-500 mb-0.5 sm:mb-1">
+            <span>Workspace</span>
+            <span>/</span>
+            <span className="text-neutral-300">Pipeline</span>
+          </div>
+          <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight">CRM Pipeline</h1>
+          <p className="text-neutral-400 text-xs">Manage deals and outreach through each conversion stage.</p>
+        </div>
+      </div>
+
+      {/* MOBILE CRM SNAPSHOT STRIP */}
+      <div className="md:hidden grid grid-cols-3 gap-2">
+        <div className="p-2.5 rounded-xl bg-[#0d0d10] border border-white/[0.08] text-center">
+          <span className="text-[10px] text-neutral-400 uppercase font-semibold">Total Deals</span>
+          <p className="text-base font-bold text-white font-mono mt-0.5">{jobs.length}</p>
+        </div>
+        <div className="p-2.5 rounded-xl bg-[#0d0d10] border border-purple-500/20 text-center">
+          <span className="text-[10px] text-purple-300 uppercase font-semibold">In Pitch</span>
+          <p className="text-base font-bold text-purple-400 font-mono mt-0.5">{jobs.filter(j => j.status === 'PITCHED').length}</p>
+        </div>
+        <div className="p-2.5 rounded-xl bg-[#0d0d10] border border-emerald-500/20 text-center">
+          <span className="text-[10px] text-emerald-300 uppercase font-semibold">Won Deals</span>
+          <p className="text-base font-bold text-emerald-400 font-mono mt-0.5">{jobs.filter(j => j.status === 'WON').length}</p>
         </div>
       </div>
 
       {/* MOBILE SEGMENTED COLUMN SWITCHER (IOS STYLE) */}
-      <div className="md:hidden flex items-center p-1.5 rounded-xl bg-[#0c0c0e] border border-white/[0.08] mb-4 gap-1.5 shadow-sm">
+      <div className="md:hidden flex items-center p-1.5 rounded-xl bg-[#0c0c0e] border border-white/[0.08] gap-1.5 shadow-sm">
         {[
           { key: 'QUEUED', label: 'Queued', count: jobs.filter(j => j.status === 'QUEUED').length, dot: 'bg-blue-400' },
           { key: 'PITCHED', label: 'Pitched', count: jobs.filter(j => j.status === 'PITCHED').length, dot: 'bg-purple-400' },
@@ -403,7 +436,7 @@ export default function Pipeline() {
           <button
             key={tab.key}
             onClick={() => setMobileTab(tab.key as any)}
-            className={`flex-1 py-2.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+            className={`flex-1 py-2.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 min-h-[44px] cursor-pointer ${
               mobileTab === tab.key 
                 ? 'bg-white/[0.12] text-white border border-white/[0.15] shadow-sm' 
                 : 'text-neutral-400 hover:text-white'
@@ -418,6 +451,7 @@ export default function Pipeline() {
         ))}
       </div>
 
+      {/* COLUMNS CONTAINER (DESKTOP KANBAN / MOBILE ACTIVE TAB) */}
       <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-x-auto pb-4 custom-scrollbar">
         {renderColumn("QUEUED LEADS", "QUEUED", "bg-blue-500", "No saved leads. Hunt in the Discovery Feed!")}
         {renderColumn("PITCHED & WAITING", "PITCHED", "bg-purple-500", "Drag leads here after sending your AI pitch.")}
